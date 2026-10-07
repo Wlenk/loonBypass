@@ -50,6 +50,26 @@ Workers 免费方案每次请求及定时执行均只有 10 ms CPU，所以大�
 GHSA-wq5f-xc86-pv6w，覆盖为修复版本 0.35.5；不使用 npm audit fix --force。
 本地检查包含 npm audit、无安装脚本模式下的 Wrangler deploy --dry-run 和 Worker 测试。
 
+## 已部署地址与启用助手
+
+部署地址：<https://loon-malaysia-rules.xgstudio.workers.dev>。
+部署成功后，还需分别确认规则能够下载和 Actions 已配置；本地 Wrangler 登录不会自动
+为 GitHub Actions 提供长期部署凭据。
+
+在 Mac 项目目录执行 `node scripts/verify-service.mjs`，检查健康状态和全部 8 个文件的
+SHA-256。如果返回 Cloudflare 403 / 1010，需要在自己的账户检查访问限制；不要把访问
+拦截直接判定为 Worker panic。
+
+配置助手：先安装 GitHub CLI（`brew install gh`），然后执行
+`bash scripts/setup-actions.sh`。助手先验证服务，再复用已有 Secrets，隐藏输入缺少的
+Bark 地址和 Cloudflare API Token，自动读取唯一的 Account ID。它仅通过 stdin 将密钥
+交给 GitHub CLI 加密保存；不会写入代码或打印密钥。随后设置启用变量、运行并等待首次
+更新与监控工作流成功。只有运行通过才可认为自动任务已验证。
+
+如果暂时只想启用外部监控，可执行 `bash scripts/setup-actions.sh --monitor-only`；
+该模式只需要 Bark 地址，不设置 Cloudflare 部署密钥或开启自动更新。已有 Secrets 不会被
+助手覆盖；更换失效密钥应在仓库设置或 GitHub CLI 中主动更新。
+
 ## 来源及归属
 
 主要来源：[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) 与

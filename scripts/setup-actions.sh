@@ -12,8 +12,9 @@ if [[ "$setup_mode" != 'all' && "$setup_mode" != '--monitor-only' ]]; then
   exit 2
 fi
 if ! command -v gh >/dev/null 2>&1; then
-  printf '请先安装 GitHub CLI：brew install gh\n' >&2
-  printf '其他安装方式：https://github.com/cli/cli#installation\n' >&2
+  printf '无需安装 gh：推荐在 GitHub 网页填写两项 Repository secrets。\n' >&2
+  printf '密钥设置：https://github.com/%s/settings/secrets/actions\n' "$repo_name" >&2
+  printf '若仍使用此可选助手，Intel Mac 请安装 GitHub 官方预编译版本，避免编译 Go。\n' >&2
   exit 2
 fi
 if [[ ! -t 0 ]]; then

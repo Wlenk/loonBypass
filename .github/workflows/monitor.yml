@@ -1,0 +1,33 @@
+name: External Worker monitoring
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3,18,33,48 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: rules-monitor
+  cancel-in-progress: false
+jobs:
+  monitor:
+    if: vars.MONITOR_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache/restore@v4
+        with:
+          path: alert-state
+          key: alert-monitor-${{ github.run_id }}
+          restore-keys: alert-monitor-
+      - run: python scripts/monitor.py
+        env:
+          WORKER_URL: ${{ vars.WORKER_URL }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: alert-state
+          key: alert-monitor-${{ github.run_id }}

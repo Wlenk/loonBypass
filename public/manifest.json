@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "version": "f20170ee0c1ef26c3202ff6a1bd43a2812ffd88932030ccb9b09aeaaf397c6b5",
+  "checked_at": "2026-10-07T03:02:47.937341+00:00",
+  "files": {
+    "netease-music": {
+      "path": "/rules/netease-music.list",
+      "count": 26,
+      "bytes": 965,
+      "sha256": "e2ab4d75a7f764bd2c398275d1ebe2636566090d1bebad7e2dd0ea1e47d225bf"
+    },
+    "tencent-games": {
+      "path": "/rules/tencent-games.list",
+      "count": 112,
+      "bytes": 3199,
+      "sha256": "f0e15038b581b14e1d040d91a6c03154172b7687a278673d5ed17504677eed17"
+    },
+    "tiktok": {
+      "path": "/rules/tiktok.list",
+      "count": 51,
+      "bytes": 1645,
+      "sha256": "c7b1611e8e43fad22643ef07bb31350f40f659571c81c9eab409d8b2a722b5a4"
+    },
+    "douyin": {
+      "path": "/rules/douyin.list",
+      "count": 78,
+      "bytes": 2320,
+      "sha256": "c25c61f1121805f71aaf352fdbc42244c2dbe51b40678855482b4eeccc58d3f0"
+    },
+    "netease-other": {
+      "path": "/rules/netease-other.list",
+      "count": 129,
+      "bytes": 3560,
+      "sha256": "724428cc44fc88a754e813bc2e9b6b1d8cd886ee0966927b23b206e6869cddff"
+    },
+    "tencent": {
+      "path": "/rules/tencent.list",
+      "count": 2474,
+      "bytes": 71825,
+      "sha256": "82360257aa1a8687654e156200f57d927bdcd0782f1bad57e3e4b53793a58d9d"
+    },
+    "alibaba": {
+      "path": "/rules/alibaba.list",
+      "count": 1332,
+      "bytes": 37797,
+      "sha256": "e3b5e7896f56021cb04491775f1e626f7bf41e6e8947e2ebb3b222f0c1ff143d"
+    },
+    "china": {
+      "path": "/rules/china.list",
+      "count": 128810,
+      "bytes": 3617198,
+      "sha256": "459369bfffae47c19f5fc117a8656750facc63c004668cf4be77b81563c5f06c"
+    }
+  },
+  "sources": {
+    "NetEaseMusic": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/NetEaseMusic/NetEaseMusic.list",
+    "NetEase": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/NetEase/NetEase.list",
+    "WeChat": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/WeChat/WeChat.list",
+    "Tencent": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Tencent/Tencent.list",
+    "Alibaba": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Alibaba/Alibaba.list",
+    "AliPay": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/AliPay/AliPay.list",
+    "TikTok": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/TikTok/TikTok.list",
+    "DouYin": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/DouYin/DouYin.list",
+    "ChinaMax": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/ChinaMax/ChinaMax.list",
+    "ChinaIPs": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/ChinaIPs/ChinaIPs.list",
+    "TencentDomain": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Tencent/Tencent_Domain.list",
+    "AlibabaDomain": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Alibaba/Alibaba_Domain.list",
+    "ChinaMaxDomain": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/ChinaMax/ChinaMax_Domain.list",
+    "META_TencentGames": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tencent-games.list",
+    "META_TikTok": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.list",
+    "META_Douyin": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/douyin.list"
+  }
+}

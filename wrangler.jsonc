@@ -1,0 +1,7 @@
+{
+  "name": "loon-malaysia-rules",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-07",
+  "workers_dev": true,
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true }
+}

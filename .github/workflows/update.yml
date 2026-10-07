@@ -1,6 +1,9 @@
 name: Update verified rules
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/activate.json']
   schedule:
     - cron: '7 * * * *'
 permissions:
@@ -10,31 +13,60 @@ concurrency:
   cancel-in-progress: false
 jobs:
   update:
-    if: vars.DEPLOY_ENABLED == 'true'
+    if: vars.DEPLOY_ENABLED != 'false'
     runs-on: ubuntu-latest
+    env:
+      WORKER_URL: ${{ vars.WORKER_URL || 'https://loon-malaysia-rules.xgstudio.workers.dev' }}
     steps:
+      - name: Check private credentials
+        id: configured
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$BARK_URL" ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo 'Waiting for CLOUDFLARE_API_TOKEN and BARK_URL repository secrets.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BARK_URL: ${{ secrets.BARK_URL }}
       - uses: actions/checkout@v4
+        if: steps.configured.outputs.enabled == 'true'
       - uses: actions/setup-python@v5
+        if: steps.configured.outputs.enabled == 'true'
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
+        if: steps.configured.outputs.enabled == 'true'
         with:
           node-version: '22'
       - uses: actions/cache/restore@v4
+        if: steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state
           key: alert-update-${{ github.run_id }}
           restore-keys: alert-update-
       - run: python scripts/build.py
+        if: steps.configured.outputs.enabled == 'true'
       - run: python -m unittest discover -s tests -p 'test_*.py'
+        if: steps.configured.outputs.enabled == 'true'
       - run: npm test
+        if: steps.configured.outputs.enabled == 'true'
       - run: npm ci --ignore-scripts
-      - name: Publish an atomic Worker version
-        run: npx wrangler deploy
+        if: steps.configured.outputs.enabled == 'true'
+      - name: Resolve the scoped Cloudflare account
+        if: steps.configured.outputs.enabled == 'true'
+        run: python scripts/resolve_account.py
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Publish an atomic Worker version
+        if: steps.configured.outputs.enabled == 'true'
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Retain GitHub mirror and last verified manifest
+        if: steps.configured.outputs.enabled == 'true'
         run: |
           git config user.name 'loon-rule-bot'
           git config user.email 'loon-rule-bot@users.noreply.github.com'
@@ -42,17 +74,17 @@ jobs:
           git commit -m 'Refresh verified Loon rules'
           git push
       - name: Verify published rules and notify recovery
+        if: steps.configured.outputs.enabled == 'true'
         run: python scripts/monitor.py
         env:
-          WORKER_URL: ${{ vars.WORKER_URL }}
           BARK_URL: ${{ secrets.BARK_URL }}
       - name: Notify a failed update
-        if: failure()
+        if: failure() && steps.configured.outputs.enabled == 'true'
         run: python scripts/monitor.py --failure
         env:
           BARK_URL: ${{ secrets.BARK_URL }}
       - uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state
           key: alert-update-${{ github.run_id }}

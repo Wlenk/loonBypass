@@ -1,6 +1,9 @@
 name: External Worker monitoring
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/activate.json']
   schedule:
     - cron: '3,18,33,48 * * * *'
 permissions:
@@ -10,24 +13,40 @@ concurrency:
   cancel-in-progress: false
 jobs:
   monitor:
-    if: vars.MONITOR_ENABLED == 'true'
+    if: vars.MONITOR_ENABLED != 'false'
     runs-on: ubuntu-latest
+    env:
+      WORKER_URL: ${{ vars.WORKER_URL || 'https://loon-malaysia-rules.xgstudio.workers.dev' }}
     steps:
+      - name: Check private notification secret
+        id: configured
+        run: |
+          if [ -n "$BARK_URL" ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo 'Waiting for the BARK_URL repository secret.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          BARK_URL: ${{ secrets.BARK_URL }}
       - uses: actions/checkout@v4
+        if: steps.configured.outputs.enabled == 'true'
       - uses: actions/setup-python@v5
+        if: steps.configured.outputs.enabled == 'true'
         with:
           python-version: '3.12'
       - uses: actions/cache/restore@v4
+        if: steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state
           key: alert-monitor-${{ github.run_id }}
           restore-keys: alert-monitor-
       - run: python scripts/monitor.py
+        if: steps.configured.outputs.enabled == 'true'
         env:
-          WORKER_URL: ${{ vars.WORKER_URL }}
           BARK_URL: ${{ secrets.BARK_URL }}
       - uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state
           key: alert-monitor-${{ github.run_id }}

@@ -19,11 +19,15 @@ tencent、alibaba、china。FINAL 为海外默认（DIRECT）。不要在远程�
 1. 建立公开 GitHub 仓库，上传本项目；不要上传私人 .lcf。
 2. 将项目解压到电脑上持久保存的目录，再使用 Cloudflare Workers 免费方案部署：
    `npm ci --ignore-scripts` 后执行 `npx wrangler deploy`。已登录 Wrangler 时无需重复登录。
-3. 仓库 Actions secrets 设置 `CLOUDFLARE_API_TOKEN`（只授权目标账户 Workers 编辑）、
-   `CLOUDFLARE_ACCOUNT_ID`、`BARK_URL`；变量 `WORKER_URL` 填真实 Worker 地址。
+3. 仓库 Actions secrets 设置 `CLOUDFLARE_API_TOKEN` 和 `BARK_URL`。
+   Cloudflare Token 只授权目标账户的 Workers Scripts Edit 与 Account Settings Read。
+   账户 ID 自动识别；若 Token 可访问多个账户，才需要额外设置 `CLOUDFLARE_ACCOUNT_ID`。
    密钥必须用安全登录/手动输入流程配置，不能写在代码或 README 中。
-4. 配齐密钥后设置仓库变量 DEPLOY_ENABLED=true、MONITOR_ENABLED=true；然后手动运行
-   Update verified rules 和 External Worker monitoring，验证首次部署及推送。
+4. 地址已默认配置为 `https://loon-malaysia-rules.xgstudio.workers.dev`；不必填写变量。
+   未配密钥时任务明确跳过，不部署或发告警。密钥齐全后由定时任务运行，或手动运行
+   Update verified rules 和 External Worker monitoring，验证首次部署及监控。
+   修改 `.github/activate.json` 的 revision 也会请求两项首次检查。
+   如需停用，才设置 DEPLOY_ENABLED=false 或 MONITOR_ENABLED=false。
 5. 已配置每小时同步上游，每 15 分钟外部检查；GitHub 定时任务可能延迟，不能保证即时告警。
 
 Workers 免费方案每次请求及定时执行均只有 10 ms CPU，所以大规模转换由 GitHub Actions 完成。
@@ -60,8 +64,13 @@ GHSA-wq5f-xc86-pv6w，覆盖为修复版本 0.35.5；不使用 npm audit fix --f
 SHA-256。如果返回 Cloudflare 403 / 1010，需要在自己的账户检查访问限制；不要把访问
 拦截直接判定为 Worker panic。
 
-配置助手：先安装 GitHub CLI（`brew install gh`），然后执行
-`bash scripts/setup-actions.sh`。助手先验证服务，再复用已有 Secrets，隐藏输入缺少的
+推荐直接在[仓库密钥设置](https://github.com/Wlenk/loonBypass/settings/secrets/actions)中
+新增两项 Repository secrets，无需安装 GitHub CLI，也无需本机长期运行。
+Cloudflare API Token 可在自己的账户后台创建；不要将 Token 发到聊天中。
+
+可选命令行助手：已有 GitHub CLI 时执行 `bash scripts/setup-actions.sh`。
+Intel Mac 使用官方 Release 的 macOS amd64 预编译版本，避免 Homebrew 编译 Go。
+助手先验证服务，再复用已有 Secrets，隐藏输入缺少的
 Bark 地址和 Cloudflare API Token，自动读取唯一的 Account ID。它仅通过 stdin 将密钥
 交给 GitHub CLI 加密保存；不会写入代码或打印密钥。随后设置启用变量、运行并等待首次
 更新与监控工作流成功。只有运行通过才可认为自动任务已验证。

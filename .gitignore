@@ -5,3 +5,4 @@ alert-state/
 __pycache__/
 *.lcf
 notification.json
+tmp/

@@ -10,7 +10,7 @@ import urllib.request
 from pathlib import Path
 import time
 
-RULESETS = ('netease-music', 'tencent-games', 'tiktok', 'douyin',
+RULESETS = ('netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
             'netease-other', 'tencent', 'alibaba', 'china')
 
 class CheckError(RuntimeError):
@@ -42,8 +42,11 @@ def health(base, expected_version=None):
         raise CheckError(detail)
     try:
         checked = json.loads(result.stdout)
-        if (checked.get('ok') is not True or
-                {item['name'] for item in checked['rulesets']} != set(RULESETS) or
+        names = {item['name'] for item in checked['rulesets']}
+        supported = [set(RULESETS)]
+        if not expected_version:
+            supported.append(set(RULESETS) - {'china-cdn'})
+        if (checked.get('ok') is not True or names not in supported or
                 (expected_version and checked.get('version') != expected_version)):
             raise ValueError()
         return checked
@@ -128,7 +131,7 @@ def main(argv=None):
         print('Failure notification handled; see the original failed workflow step.')
         return 0
     if not failed:
-        print('Health check passed: all 8 rulesets verified')
+        print(f"Health check passed: all {len(verified['rulesets'])} rulesets verified")
         print(f"Verified version: {verified['version']}")
     return int(failed)
 

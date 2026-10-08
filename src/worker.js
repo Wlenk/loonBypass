@@ -1,5 +1,7 @@
 // Updates happen in GitHub Actions, followed by an atomic Worker deployment.
 // The request path never downloads or compiles an upstream rule list.
+const RULESETS = ['netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
+  'netease-other', 'tencent', 'alibaba', 'china'];
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -12,14 +14,15 @@ export default {
         if (!response.ok) throw new Error('manifest missing');
         const manifest = await response.json();
         const age = Date.now() - Date.parse(manifest.checked_at);
-        const ok = manifest.schema === 1 && Object.keys(manifest.files).length === 8 &&
+        const names = Object.keys(manifest.files ?? {});
+        const ok = manifest.schema === 1 && names.sort().join() === [...RULESETS].sort().join() &&
           Number.isFinite(age) && age >= -300000 && age < 72 * 3600000;
         return Response.json({ ok, version: manifest.version, checked_at: manifest.checked_at,
-          rulesets: Object.keys(manifest.files).length },
+          rulesets: names.length },
           { status: ok ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
       }
       if (url.pathname !== '/manifest.json' &&
-          !/^\/rules\/(netease-music|tencent-games|tiktok|douyin|netease-other|tencent|alibaba|china)\.list$/.test(url.pathname)) {
+          !RULESETS.some(name => url.pathname === `/rules/${name}.list`)) {
         return new Response('Loon rule service: /health, /manifest.json, /rules/*.list', { status: 404 });
       }
       const response = await env.ASSETS.fetch(request);

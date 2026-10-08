@@ -22,7 +22,7 @@ if [[ ! -t 0 ]]; then
   exit 2
 fi
 
-printf '先检查已部署服务和全部 8 组规则。\n'
+printf '先检查已部署服务和全部规则（当前版本为 9 组）。\n'
 node scripts/verify-service.mjs "$worker_base"
 if ! gh auth status --hostname github.com >/dev/null 2>&1; then
   gh auth login --hostname github.com --git-protocol https --web

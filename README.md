@@ -6,13 +6,31 @@
 ## 规则顺序
 
 Loon 的本地规则：节点入口 / 内网 / Apple 推送直连 → 可识别通话 → 广告规则。
-远程规则订阅必须依次为：netease-music、tencent-games、tiktok、douyin、netease-other、
+远程规则订阅必须依次为：netease-music、tencent-games、tiktok、douyin、china-cdn、netease-other、
 tencent、alibaba、china。FINAL 为海外默认（DIRECT）。不要在远程平台规则前放本地 qq.com、
 163.com 等平台总域名或 GEOIP,CN，否则会覆盖细分规则。
 
 每个文件使用 Loon 原生文本规则，不是 mihomo 的 mrs/dat，也不需要 domain-set 参数。
 腾讯游戏列表同时包括 Riot 手游相关域名。共享 CDN、纯 IP 通话及动态 UDP 不能保证按 App
 完全区分；STUN 是打洞流量，也可能来自游戏。微信 UDP 域名例外须由 Loon 本地 AND 规则处理。
+
+## 国内 CDN 优化
+
+新增 `china-cdn` 原生规则集，对应配置中的 `📦 国内CDN` 可选策略组，默认 DIRECT；
+可单独切回国内默认、Mac mini 或节点选择。明确的音乐、腾讯游戏、TikTok、抖音规则排在
+CDN 前，其他平台业务与国内兜底排在 CDN 后，保留原平台选择及游戏流量控制。
+
+`data/china-cdn.list` 维护资源域名，包括阿里、腾讯、百度、京东、新浪、小米、小红书、
+快手及公共静态库 CDN。它不使用泛化的 cdn 关键词、云厂商整片域名或 IP/ASN 直连。
+每小时编译时对照抖音、TikTok 上游及字节共享资源域名；发生冲突的 CDN 条目不会发布。
+已有八组列表不扣除 CDN 条目，因此旧配置继续按原有平台策略运行。
+
+B 站 `bilivideo.com/cn/net`、`acgvideo.com`、`bilicdn1` 至 `bilicdn5.com` 与明确的视频
+镜像走 CDN 组。`hdslb.com/net/org`、`biliimg.com` 图片家族、网站及 API 保留国内默认；
+只允许精确的 `s1.hdslb.com` 网页播放器静态资源直连。域名只能区分资源主机，不能判断
+同一 HTTPS 主机下每个文件的类型；视频域名若混用其他资源，按视频优先。
+不解密 HTTPS、不改写视频 URL，也不保证纯 IP、未知 PCDN 或第三方域名都能被识别。
+部分地区限定视频仍可能要求播放器资源也走回国节点，届时将 CDN 组切回国内默认。
 
 ## 发布与更新
 
@@ -38,11 +56,13 @@ Workers 免费方案每次请求及定时执行均只有 10 ms CPU，所以大�
 
 - 上游超时、空列表、非原生规则、IP 错误及规则数量下降超过 20%：停止更新，保留旧部署。
 - Worker 异常：返回 503，不能返回空的成功规则文件。
-- 外部监控检查健康状态、72 小时更新超时、8 个文件的长度与 SHA-256；服务完全宕机也能检查。
+- 外部监控检查健康状态、72 小时更新超时、9 个文件的长度与 SHA-256；服务完全宕机也能检查。
 - 检查失败时日志记录具体公开路径、HTTP 状态、版本或文件校验错误。Cloudflare 403 / 1010
   单独标明访问拦截；不会将通知密钥、完整私有地址或服务器响应内容写入日志。
 - 本地助手与外部监控复用同一套 Node.js 22+ 校验器；部署后还须匹配本次生成的版本，
   防止旧版本通过检查。通知仍由 Python 投递，不改变请求身份头。
+- 升级期间普通监控兼容完整的旧八组部署；部署后校验必须匹配本次版本且完整包含九组。
+  其他缺失、额外或错误的规则集均不能通过检查。
 - 故障检查保持失败状态；后续通知步骤只按投递是否成功返回结果，不会把已送达的通知标红。
 - 故障通知每条监控通道最多每 6 小时重复一次；恢复通知一次。两条通道分别记录事件。
 - GitHub 镜像在 `public/rules/`；必要时手动改用 raw.githubusercontent.com 的仓库镜像地址。
@@ -65,7 +85,7 @@ GHSA-wq5f-xc86-pv6w，覆盖为修复版本 0.35.5；不使用 npm audit fix --f
 部署成功后，还需分别确认规则能够下载和 Actions 已配置；本地 Wrangler 登录不会自动
 为 GitHub Actions 提供长期部署凭据。
 
-在 Mac 项目目录执行 `node scripts/verify-service.mjs`，检查健康状态和全部 8 个文件的
+在 Mac 项目目录执行 `node scripts/verify-service.mjs`，检查健康状态和全部 9 个文件的
 SHA-256。如果返回 Cloudflare 403 / 1010，需要在自己的账户检查访问限制；不要把访问
 拦截直接判定为 Worker panic。
 

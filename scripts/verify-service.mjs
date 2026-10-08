@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RULESETS = [
-  'netease-music', 'tencent-games', 'tiktok', 'douyin',
+  'netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
   'netease-other', 'tencent', 'alibaba', 'china',
 ];
+const LEGACY_RULESETS = RULESETS.filter(name => name !== 'china-cdn');
 
 export async function verifyService(base, { fetchImpl = fetch, now = Date.now(), expectedVersion } = {}) {
   const origin = new URL(base);
@@ -49,16 +50,20 @@ export async function verifyService(base, { fetchImpl = fetch, now = Date.now(),
     throw new Error('健康状态或规则清单无效');
   }
   const age = now - Date.parse(manifest.checked_at);
+  const names = Object.keys(manifest.files ?? {}).sort().join();
+  // A normal monitor can check the previous complete version while an atomic
+  // upgrade is in progress. Post-deploy verification always requires all nine.
+  const legacy = !expectedVersion && names === [...LEGACY_RULESETS].sort().join();
   if (health.ok !== true || health.version !== manifest.version || manifest.schema !== 1 ||
       !/^[a-f0-9]{64}$/.test(manifest.version ?? '') ||
       !Number.isFinite(age) || age >= 72 * 3_600_000 || age < -300_000 ||
-      Object.keys(manifest.files ?? {}).sort().join() !== [...RULESETS].sort().join()) {
+      (!legacy && names !== [...RULESETS].sort().join())) {
     throw new Error('健康状态、版本或规则更新时间不符合要求');
   }
   if (expectedVersion && manifest.version !== expectedVersion) {
     throw new Error('/manifest.json: 当前公开版本与本次部署版本不一致');
   }
-  const verified = await Promise.all(RULESETS.map(async name => {
+  const verified = await Promise.all((legacy ? LEGACY_RULESETS : RULESETS).map(async name => {
     const entry = manifest.files[name];
     if (entry.path !== `/rules/${name}.list` || !Number.isInteger(entry.bytes) ||
         entry.bytes < 1 || !Number.isInteger(entry.count) || entry.count < 1 ||

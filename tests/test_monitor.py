@@ -48,6 +48,15 @@ class MonitorChecks(unittest.TestCase):
                 with self.assertRaises(monitor.CheckError):
                     monitor.health('https://rules.example', 'a' * 64)
 
+    def test_previous_complete_version_is_only_allowed_outside_post_deploy_checks(self):
+        checked = self.verified()
+        checked['rulesets'] = [item for item in checked['rulesets'] if item['name'] != 'china-cdn']
+        result = SimpleNamespace(returncode=0, stdout=json.dumps(checked), stderr='')
+        with patch.object(monitor.subprocess, 'run', return_value=result):
+            self.assertEqual(len(monitor.health('https://rules.example')['rulesets']), 8)
+            with self.assertRaises(monitor.CheckError):
+                monitor.health('https://rules.example', 'a' * 64)
+
     def test_notification_http_error_does_not_expose_endpoint(self):
         with tempfile.TemporaryDirectory() as temp:
             endpoint = 'https://private.example/private-token'

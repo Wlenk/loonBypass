@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { verifyService } from '../scripts/verify-service.mjs';
 
-const names = ['netease-music', 'tencent-games', 'tiktok', 'douyin',
+const names = ['netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
   'netease-other', 'tencent', 'alibaba', 'china'];
 
 function fixture() {
@@ -25,13 +25,23 @@ function fixture() {
   return { manifest, fetchImpl, requests };
 }
 
-test('service verification downloads and hashes all eight rulesets', async () => {
+test('service verification downloads and hashes all nine rulesets', async () => {
   const data = fixture();
   const checked = await verifyService('https://rules.example', data);
   assert.equal(checked.ok, true);
-  assert.equal(checked.rulesets.length, 8);
-  assert.equal(data.requests.length, 10);
+  assert.equal(checked.rulesets.length, 9);
+  assert.equal(data.requests.length, 11);
   assert.ok(data.requests.every(item => item.options.redirect === 'error'));
+});
+
+test('a complete previous deployment is monitored during an upgrade but cannot verify a new deployment', async () => {
+  const data = fixture();
+  delete data.manifest.files['china-cdn'];
+  const checked = await verifyService('https://rules.example', data);
+  assert.equal(checked.rulesets.length, 8);
+  await assert.rejects(verifyService('https://rules.example', {
+    ...data, expectedVersion: data.manifest.version,
+  }), /不符合要求/);
 });
 
 test('fresh older deployments cannot pass post-deployment verification', async () => {
@@ -46,6 +56,7 @@ test('stale, future, incomplete and malformed manifests are rejected', async () 
     data => { data.checked_at = new Date(Date.now() - 73 * 3_600_000).toISOString(); },
     data => { data.checked_at = new Date(Date.now() + 360_000).toISOString(); },
     data => { delete data.files.china; },
+    data => { data.files.extra = data.files.china; },
     data => { data.version = 'invalid'; },
   ]) {
     const data = fixture();

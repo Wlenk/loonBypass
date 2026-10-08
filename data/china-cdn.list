@@ -1,0 +1,72 @@
+# Curated domestic resource hosts; default policy is chosen by the private Loon profile.
+# Checked against MetaCubeX/meta-rules-dat (meta/geo/geosite/bilibili.list),
+# blackmatrix7/ios_rule_script (Loon ChinaMax/Alibaba/Tencent) and
+# v2fly/domain-list-community (data/baidu, data/bootcdn).
+# Do not add cloud-provider parent domains, IP networks or generic CDN keywords.
+# Douyin/TikTok resources and Bilibili image families are protected by the compiler.
+# Music, Tencent games, TikTok and Douyin rules must precede this list in Loon.
+
+# Bilibili video / audio streams. Keep API, website, hdslb and biliimg images in China.
+DOMAIN-SUFFIX,bilivideo.com
+DOMAIN-SUFFIX,bilivideo.cn
+DOMAIN-SUFFIX,bilivideo.net
+DOMAIN-SUFFIX,acgvideo.com
+DOMAIN-SUFFIX,bilicdn1.com
+DOMAIN-SUFFIX,bilicdn2.com
+DOMAIN-SUFFIX,bilicdn3.com
+DOMAIN-SUFFIX,bilicdn4.com
+DOMAIN-SUFFIX,bilicdn5.com
+DOMAIN,upos-hz-mirrorakam.akamaized.net
+# This exact host serves Bilibili web player JS/CSS; never use a hdslb suffix.
+DOMAIN,s1.hdslb.com
+
+# Alibaba / Taobao resource domains, excluding cloud service parent domains.
+DOMAIN-SUFFIX,alicdn.com
+DOMAIN-SUFFIX,alicdn.net
+DOMAIN-SUFFIX,ialicdn.com
+DOMAIN-SUFFIX,myalicdn.com
+DOMAIN-SUFFIX,taobaocdn.com
+DOMAIN-SUFFIX,tbcdn.cn
+DOMAIN-SUFFIX,tbcdn.com
+DOMAIN-SUFFIX,tmallalicdn.com
+
+# Tencent static files and images. Explicit game resources retain game-group priority.
+DOMAIN-SUFFIX,gtimg.com
+DOMAIN-SUFFIX,gtimg.cn
+DOMAIN-SUFFIX,gtimg.com.cn
+DOMAIN-SUFFIX,qpic.cn
+DOMAIN-SUFFIX,qlogo.cn
+
+# Baidu / JD / Sina / Qihoo / Xiaomi / Xiaohongshu / Kuaishou resource domains.
+DOMAIN-SUFFIX,bdstatic.com
+DOMAIN-SUFFIX,bdimg.com
+DOMAIN-SUFFIX,baidustatic.com
+DOMAIN-SUFFIX,360buyimg.com
+DOMAIN-SUFFIX,jdcdn.com
+DOMAIN-SUFFIX,sinaimg.cn
+DOMAIN-SUFFIX,sinaimg.com
+DOMAIN-SUFFIX,sinajs.cn
+DOMAIN-SUFFIX,sinajs.com
+DOMAIN-SUFFIX,qhimg.com
+DOMAIN-SUFFIX,qhimgs.com
+DOMAIN-SUFFIX,qhres.com
+DOMAIN-SUFFIX,qhres2.com
+DOMAIN-SUFFIX,mi-img.com
+DOMAIN-SUFFIX,mi-img1.com
+DOMAIN-SUFFIX,mi-img2.com
+DOMAIN-SUFFIX,mi-img3.com
+DOMAIN-SUFFIX,mi-img4.com
+DOMAIN-SUFFIX,mi-img5.com
+DOMAIN-SUFFIX,xhscdn.com
+DOMAIN-SUFFIX,xhscdn.net
+DOMAIN-SUFFIX,kwaicdn.com
+DOMAIN-SUFFIX,kwaicdnx.com
+DOMAIN-SUFFIX,kwimgs.com
+
+# Public static-library CDN hosts.
+DOMAIN-SUFFIX,bootcdn.cn
+DOMAIN-SUFFIX,bootcdn.net
+DOMAIN-SUFFIX,bootcss.com
+DOMAIN-SUFFIX,staticfile.org
+DOMAIN-SUFFIX,staticfile.net
+DOMAIN-SUFFIX,baomitu.com

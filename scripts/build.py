@@ -27,6 +27,16 @@ GAMES = ['game.qq.com', 'games.qq.com', 'qqgame.qq.com', 'pvp.qq.com',
          'speedm.qq.com', 'hlddz.qq.com', 'peng.qq.com', 'syzs.qq.com',
          'tgp.qq.com', 'msdk.qq.com', 'gamer.qq.com', 'game.gtimg.com',
          'gamedownload.qq.com', 'tencentgames.com', 'pvp.net', 'riotcdn.net', 'riotgames.com']
+CDN_FILE = ROOT / 'data/china-cdn.list'
+IMAGE_DOMAINS = ('hdslb.com', 'hdslb.net', 'hdslb.org', 'biliimg.com')
+CLOUD_PARENTS = {'aliyuncs.com', 'myqcloud.com', 'qcloud.com', 'qcloudcdn.com',
+                 'akamaized.com', 'akamaized.net', 'cloudfront.net', 'qiniu.com',
+                 'qiniucdn.com', 'qiniudn.com', 'cn', 'com', 'net'}
+BYTE_RESOURCES = ('douyin.com', 'douyincdn.com', 'douyinvod.com', 'douyinpic.com',
+                  'douyinstatic.com', 'amemv.com', 'snssdk.com', 'bytecdn.cn',
+                  'bytecdn.com', 'bytedance.com', 'bytedance.net', 'ibytedtos.com',
+                  'ibyteimg.com', 'byteimg.com', 'pstatp.com', 'bytegoofy.com',
+                  'tiktokcdn.com', 'tiktokv.com', 'tiktok.com')
 
 def validate(row):
     f = row.split(',')
@@ -82,6 +92,41 @@ def fetch_source(item, fixture=None):
             text = data.decode('utf-8-sig')
     return name, parse(text, 'Domain' in name or name.startswith('META_'))
 
+def domains_overlap(candidate, protected):
+    """Whether two domain rules can match the same host, including child domains."""
+    kind, host = candidate.split(',')
+    other_kind, other = protected.split(',')[:2]
+    host, other = host.lower(), other.lower()
+    below = lambda child, parent: child == parent or child.endswith('.' + parent)
+    if other_kind == 'DOMAIN-KEYWORD':
+        # Reject known keyword-bearing resource hosts. Keyword rules must also
+        # precede CDN rules in profiles, protecting any future matching subdomain.
+        return other in host
+    if other_kind not in ('DOMAIN', 'DOMAIN-SUFFIX'):
+        return False
+    if kind == 'DOMAIN':
+        return host == other if other_kind == 'DOMAIN' else below(host, other)
+    return below(other, host) or (other_kind == 'DOMAIN-SUFFIX' and below(host, other))
+
+def compile_cdn(src, rows=None):
+    rows = parse(CDN_FILE.read_text()) if rows is None else rows
+    protected = ['DOMAIN-SUFFIX,' + host for host in BYTE_RESOURCES]
+    for name in ('META_Douyin', 'DouYin', 'META_TikTok', 'TikTok'):
+        protected.extend(src[name])
+    result = []
+    for row in dict.fromkeys(rows):
+        validate(row)
+        kind, host = row.split(',')[:2]
+        if kind not in ('DOMAIN', 'DOMAIN-SUFFIX') or host in CLOUD_PARENTS:
+            raise ValueError('CDN rules must identify resource hosts, not providers or IP ranges')
+        if any(domains_overlap(row, item) for item in protected):
+            continue
+        if row != 'DOMAIN,s1.hdslb.com' and any(
+                domains_overlap(row, 'DOMAIN-SUFFIX,' + image) for image in IMAGE_DOMAINS):
+            raise ValueError('Bilibili image domains must retain the China policy')
+        result.append(row)
+    return result
+
 def compile_rules(src):
     music = []
     for row in src['NetEaseMusic']:
@@ -107,7 +152,10 @@ def compile_rules(src):
     for name, rows in groups.items():
         groups[name] = [r for r in dict.fromkeys(rows) if r not in seen]
         seen.update(groups[name])
-    return groups
+    # Preserve every existing endpoint for old profiles. CDN overrides are applied
+    # only by profiles that subscribe to the new list, after specialist rules.
+    return {**dict(list(groups.items())[:4]), 'china-cdn': compile_cdn(src),
+            **dict(list(groups.items())[4:])}
 
 def build(fixture=None, output=None):
     output = Path(output or ROOT / 'public')
@@ -115,7 +163,7 @@ def build(fixture=None, output=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
         src = dict(pool.map(lambda item: fetch_source(item, fixture), SOURCES.items()))
     groups = compile_rules(src)
-    minimums = {'netease-music': 10, 'tencent-games': 40, 'tiktok': 15, 'douyin': 20,
+    minimums = {'china-cdn': 40, 'netease-music': 10, 'tencent-games': 40, 'tiktok': 15, 'douyin': 20,
                 'netease-other': 60, 'tencent': 1000, 'alibaba': 500, 'china': 60000}
     files = {}
     bodies = {}
@@ -129,7 +177,8 @@ def build(fixture=None, output=None):
         bodies[name] = body
     version = hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
     manifest = {'schema': 1, 'version': version, 'checked_at': datetime.now(timezone.utc).isoformat(),
-                'files': files, 'sources': SOURCES}
+                'files': files, 'sources': {**SOURCES, 'CuratedChinaCDN':
+                    'https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list'}}
     # Everything validates before any live assets are replaced. Deployment is a new Worker version.
     output.mkdir(parents=True, exist_ok=True)
     (output / 'rules').mkdir(exist_ok=True)

@@ -3,16 +3,20 @@ import assert from 'node:assert/strict';
 import worker from '../src/worker.js';
 
 const request = (path, method = 'GET') => new Request('https://rules.example' + path, { method });
+const names = ['netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
+  'netease-other', 'tencent', 'alibaba', 'china'];
 const manifest = () => ({ schema: 1, version: 'verified', checked_at: new Date().toISOString(),
-  files: Object.fromEntries(Array.from({ length: 8 }, (_, i) => [String(i), {}])) });
+  files: Object.fromEntries(names.map(name => [name, {}])) });
 
 test('serves verified assets without contacting upstreams', async () => {
-  const response = await worker.fetch(request('/rules/tiktok.list'), {
-    ASSETS: { fetch: async () => new Response('DOMAIN-SUFFIX,tiktok.com\n') }
-  });
-  assert.equal(response.status, 200);
-  assert.match(await response.text(), /tiktok.com/);
-  assert.match(response.headers.get('Content-Type'), /text\/plain/);
+  for (const name of ['tiktok', 'china-cdn']) {
+    const response = await worker.fetch(request(`/rules/${name}.list`), {
+      ASSETS: { fetch: async () => new Response('DOMAIN-SUFFIX,example.com\n') }
+    });
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /example.com/);
+    assert.match(response.headers.get('Content-Type'), /text\/plain/);
+  }
 });
 test('asset exception and missing asset never become empty 200 rules', async () => {
   for (const fetch of [async () => { throw Error('outage'); }, async () => new Response('', { status: 404 })]) {
@@ -23,7 +27,8 @@ test('asset exception and missing asset never become empty 200 rules', async () 
 });
 test('health rejects stale, incomplete and corrupt manifests', async () => {
   for (const data of [{ ...manifest(), checked_at: '2020-01-01T00:00:00Z' },
-    { ...manifest(), files: {} }, { ...manifest(), checked_at: 'invalid' }]) {
+    { ...manifest(), files: {} }, { ...manifest(), checked_at: 'invalid' },
+    { ...manifest(), files: Object.fromEntries(names.map(name => [name === 'china-cdn' ? 'wrong' : name, {}])) }]) {
     const response = await worker.fetch(request('/health'), { ASSETS: { fetch: async () => Response.json(data) } });
     assert.equal(response.status, 503);
     assert.equal((await response.json()).ok, false);

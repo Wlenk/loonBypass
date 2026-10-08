@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "f20170ee0c1ef26c3202ff6a1bd43a2812ffd88932030ccb9b09aeaaf397c6b5",
-  "checked_at": "2026-10-07T03:02:47.937341+00:00",
+  "version": "03558ccccc65acaa931f6d650c0e23fc59f428c1f490472cc485fda338632e64",
+  "checked_at": "2026-10-08T06:08:34.232534+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -47,9 +47,9 @@
     },
     "china": {
       "path": "/rules/china.list",
-      "count": 128810,
-      "bytes": 3617198,
-      "sha256": "459369bfffae47c19f5fc117a8656750facc63c004668cf4be77b81563c5f06c"
+      "count": 128808,
+      "bytes": 3617126,
+      "sha256": "bd13795d55556af2aabc2d2162f7c8a7522f8fb492ae1796a13014cfbb3bdb4b"
     }
   },
   "sources": {

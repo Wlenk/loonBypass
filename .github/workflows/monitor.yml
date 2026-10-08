@@ -29,13 +29,17 @@ jobs:
           fi
         env:
           BARK_URL: ${{ secrets.BARK_URL }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: steps.configured.outputs.enabled == 'true'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: steps.configured.outputs.enabled == 'true'
         with:
           python-version: '3.12'
-      - uses: actions/cache/restore@v4
+      - uses: actions/setup-node@v6
+        if: steps.configured.outputs.enabled == 'true'
+        with:
+          node-version: '22'
+      - uses: actions/cache/restore@v5
         if: steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state
@@ -45,7 +49,7 @@ jobs:
         if: steps.configured.outputs.enabled == 'true'
         env:
           BARK_URL: ${{ secrets.BARK_URL }}
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v5
         if: always() && steps.configured.outputs.enabled == 'true'
         with:
           path: alert-state

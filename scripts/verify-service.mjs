@@ -7,31 +7,56 @@ const RULESETS = [
   'netease-other', 'tencent', 'alibaba', 'china',
 ];
 
-export async function verifyService(base, { fetchImpl = fetch, now = Date.now() } = {}) {
+export async function verifyService(base, { fetchImpl = fetch, now = Date.now(), expectedVersion } = {}) {
   const origin = new URL(base);
   if (origin.protocol !== 'https:' || origin.username || origin.password ||
       origin.search || origin.hash || origin.pathname !== '/') {
     throw new Error('Worker 地址必须是没有密码、路径或查询参数的 HTTPS 地址');
   }
   async function get(path) {
-    const response = await fetchImpl(new URL(path, origin), {
-      redirect: 'error', signal: AbortSignal.timeout(35_000),
-    });
+    let response;
+    try {
+      response = await fetchImpl(new URL(path, origin), {
+        redirect: 'error', signal: AbortSignal.timeout(35_000),
+      });
+    } catch {
+      throw new Error(`${path}: 连接失败、超时或重定向被拒绝`);
+    }
     if (!response.ok) {
+      const reader = response.body?.getReader();
+      const preview = reader ? await reader.read() : null;
+      if (reader) await reader.cancel();
+      const code = preview?.value && /error code:\s*(1\d{3})\b/.exec(
+        Buffer.from(preview.value).subarray(0, 4096).toString());
+      const detail = code ? `；Cloudflare error ${code[1]}` : '';
       const hint = response.status === 403 ? '；请检查 Cloudflare 的访问限制' : '';
-      throw new Error(`${path}: HTTP ${response.status}${hint}`);
+      throw new Error(`${path}: HTTP ${response.status}${detail}${hint}`);
     }
     return response;
   }
+  async function readJson(path) {
+    const response = await get(path);
+    try {
+      return await response.json();
+    } catch {
+      throw new Error(`${path}: 无效 JSON 响应`);
+    }
+  }
   const [health, manifest] = await Promise.all([
-    get('/health').then(response => response.json()),
-    get('/manifest.json').then(response => response.json()),
+    readJson('/health'), readJson('/manifest.json'),
   ]);
+  if (!health || !manifest || typeof health !== 'object' || typeof manifest !== 'object') {
+    throw new Error('健康状态或规则清单无效');
+  }
   const age = now - Date.parse(manifest.checked_at);
-  if (!health.ok || health.version !== manifest.version || manifest.schema !== 1 ||
-      !Number.isFinite(age) || age > 72 * 3_600_000 || age < -300_000 ||
+  if (health.ok !== true || health.version !== manifest.version || manifest.schema !== 1 ||
+      !/^[a-f0-9]{64}$/.test(manifest.version ?? '') ||
+      !Number.isFinite(age) || age >= 72 * 3_600_000 || age < -300_000 ||
       Object.keys(manifest.files ?? {}).sort().join() !== [...RULESETS].sort().join()) {
     throw new Error('健康状态、版本或规则更新时间不符合要求');
+  }
+  if (expectedVersion && manifest.version !== expectedVersion) {
+    throw new Error('/manifest.json: 当前公开版本与本次部署版本不一致');
   }
   const verified = await Promise.all(RULESETS.map(async name => {
     const entry = manifest.files[name];
@@ -54,7 +79,7 @@ export async function verifyService(base, { fetchImpl = fetch, now = Date.now() 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const result = await verifyService(process.argv[2] ??
-      'https://loon-malaysia-rules.xgstudio.workers.dev');
+      'https://loon-malaysia-rules.xgstudio.workers.dev', { expectedVersion: process.argv[3] });
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(`规则服务检查失败：${error.message}`);

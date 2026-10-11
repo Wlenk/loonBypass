@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "version": "2e8224e1f8da51b593c42b56553f78ea7e3282d513c9254f18b30ef511ea8771",
+  "source_version": "8d61748f2a2d3a38f0598d602eb998614768658914e293563a98ab3a8226f7d5",
+  "checked_at": "2026-10-11T16:48:52.913845+00:00",
+  "compiler": "mihomo v1.19.32",
+  "profile_sha256": "5f87f7f240ec0314d8049f1ca8983a099b82732029e2f1544fa6cd7fd1d71aad",
+  "skipped_user_agent": {
+    "netease-music": 2,
+    "tencent-games": 0,
+    "tiktok": 1,
+    "douyin": 0,
+    "china-cdn": 0,
+    "netease-other": 0,
+    "tencent": 7,
+    "alibaba": 0,
+    "china": 55
+  },
+  "files": {
+    "netease-music": {
+      "path": "/mihomo/netease-music.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 24,
+      "bytes": 879,
+      "sha256": "346b9ee98ed93d81df071be2075524f17e24a8980a8a3d759ac5e0a8c928347a"
+    },
+    "tencent-games": {
+      "path": "/mihomo/tencent-games.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 112,
+      "bytes": 3196,
+      "sha256": "ef02343e9f3ea80609aaf2d03488b83d78a02a02281817c4bd62615ac365125f"
+    },
+    "tiktok": {
+      "path": "/mihomo/tiktok.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 50,
+      "bytes": 1623,
+      "sha256": "dd289e48ce122fb73b5822372e3023960a4f5afff924b73c37696f6dfbc847b0"
+    },
+    "douyin": {
+      "path": "/mihomo/douyin.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 78,
+      "bytes": 2317,
+      "sha256": "a017197e22318832b991fa6ebfbcceff18fbfc63968ac6de0785c2260969163b"
+    },
+    "china-cdn": {
+      "path": "/mihomo/china-cdn.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 54,
+      "bytes": 1467,
+      "sha256": "5e4b08f805cc7963867c1bbc56b59827d8e3e4f6200c85a07b747a99604f267d"
+    },
+    "netease-other": {
+      "path": "/mihomo/netease-other.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 129,
+      "bytes": 3557,
+      "sha256": "464eed738d3e414c45d9a6ba753b97b027626146d5d49445775205daab62ef4f"
+    },
+    "tencent": {
+      "path": "/mihomo/tencent.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 2467,
+      "bytes": 71628,
+      "sha256": "3d49842b08a1e85fffdfe5c30cd18f06df9bd1f36d0a580222cdc34528017300"
+    },
+    "alibaba": {
+      "path": "/mihomo/alibaba.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 1332,
+      "bytes": 37794,
+      "sha256": "77e77ddcc477df2ffab7c971ea7a3ad009196dc603376e154328ee3466af547f"
+    },
+    "china-domain": {
+      "path": "/mihomo/china-domain.mrs",
+      "behavior": "domain",
+      "format": "mrs",
+      "count": 108776,
+      "bytes": 527606,
+      "sha256": "482290701e2b9b05e4a2b7d7dc38732160a870e145c4dce9f961a4c02ed411e9"
+    },
+    "china-ipcidr": {
+      "path": "/mihomo/china-ipcidr.mrs",
+      "behavior": "ipcidr",
+      "format": "mrs",
+      "count": 20350,
+      "bytes": 51758,
+      "sha256": "4372a3caf13e6928b62e8a9d0c87cd366a06c41e1faab5d8d4f1e5e73411f377"
+    },
+    "china-other": {
+      "path": "/mihomo/china-other.list",
+      "behavior": "classical",
+      "format": "text",
+      "count": 14,
+      "bytes": 362,
+      "sha256": "fbed68d938d77d81fe60de4b0a1702ad94a78569403f695437d3c4b7db9447e4"
+    }
+  }
+}

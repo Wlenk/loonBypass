@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "8d61748f2a2d3a38f0598d602eb998614768658914e293563a98ab3a8226f7d5",
-  "checked_at": "2026-10-11T14:00:25.448231+00:00",
+  "checked_at": "2026-10-11T16:48:52.913845+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -76,5 +76,10 @@
     "META_TikTok": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.list",
     "META_Douyin": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/douyin.list",
     "CuratedChinaCDN": "https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list"
+  },
+  "mihomo": {
+    "path": "/mihomo/manifest.json",
+    "version": "2e8224e1f8da51b593c42b56553f78ea7e3282d513c9254f18b30ef511ea8771",
+    "files": 11
   }
 }

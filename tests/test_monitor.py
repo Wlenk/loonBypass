@@ -95,6 +95,18 @@ class MonitorChecks(unittest.TestCase):
                 self.assertEqual(monitor.main(['--expected-manifest', str(manifest)]), 0)
             health.assert_called_once_with('https://rules.example', 'a' * 64)
 
+    def test_mihomo_deployment_cannot_pass_using_only_the_old_loon_snapshot(self):
+        result = SimpleNamespace(returncode=0, stdout=json.dumps(self.verified()), stderr='')
+        with patch.object(monitor.subprocess, 'run', return_value=result):
+            with self.assertRaises(monitor.CheckError):
+                monitor.health('https://rules.example', 'a' * 64, 'b' * 64)
+        checked = {**self.verified(), 'mihomo_version': 'b' * 64,
+                   'mihomo_rulesets': [{'name': str(index)} for index in range(11)]}
+        result.stdout = json.dumps(checked)
+        with patch.object(monitor.subprocess, 'run', return_value=result) as run:
+            self.assertTrue(monitor.health('https://rules.example', 'a' * 64, 'b' * 64)['ok'])
+        self.assertEqual(run.call_args.args[0][-2:], ['a' * 64, 'b' * 64])
+
 
 if __name__ == '__main__':
     unittest.main()

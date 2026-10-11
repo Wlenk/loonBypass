@@ -48,6 +48,17 @@ jobs:
           restore-keys: alert-update-
       - run: python scripts/build.py
         if: steps.configured.outputs.enabled == 'true'
+      - uses: actions/cache@v5
+        if: steps.configured.outputs.enabled == 'true'
+        with:
+          path: tmp/mihomo-core.gz
+          key: mihomo-${{ runner.os }}-v1.19.32-ba3ce607
+      - name: Install verified official Mihomo compiler
+        if: steps.configured.outputs.enabled == 'true'
+        run: python scripts/install_mihomo.py
+      - name: Compile Mihomo rules and check private profile envelope
+        if: steps.configured.outputs.enabled == 'true'
+        run: python scripts/build_mihomo.py
       - run: python -m unittest discover -s tests -p 'test_*.py'
         if: steps.configured.outputs.enabled == 'true'
       - run: npm test

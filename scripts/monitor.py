@@ -16,7 +16,7 @@ RULESETS = ('netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
 class CheckError(RuntimeError):
     """A diagnostic containing only public paths, statuses and fixed messages."""
 
-def health(base, expected_version=None):
+def health(base, expected_version=None, expected_mihomo_version=None):
     origin = urllib.parse.urlsplit(base)
     if (origin.scheme != 'https' or not origin.hostname or origin.username or
             origin.password or origin.query or origin.fragment or origin.path not in ('', '/')):
@@ -25,10 +25,12 @@ def health(base, expected_version=None):
     command = ['node', str(Path(__file__).with_name('verify-service.mjs')), base]
     if expected_version:
         command.append(expected_version)
+    if expected_mihomo_version:
+        command.append(expected_mihomo_version)
     child_env = {key: value for key, value in os.environ.items()
                  if key not in ('BARK_URL', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID')}
     try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=80, env=child_env)
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120, env=child_env)
     except FileNotFoundError:
         raise CheckError('Node.js 22 or newer is required for service verification') from None
     except subprocess.TimeoutExpired:
@@ -47,7 +49,10 @@ def health(base, expected_version=None):
         if not expected_version:
             supported.append(set(RULESETS) - {'china-cdn'})
         if (checked.get('ok') is not True or names not in supported or
-                (expected_version and checked.get('version') != expected_version)):
+                (expected_version and checked.get('version') != expected_version) or
+                (expected_mihomo_version and
+                 (checked.get('mihomo_version') != expected_mihomo_version or
+                  len(checked.get('mihomo_rulesets', [])) != 11))):
             raise ValueError()
         return checked
     except (ValueError, KeyError, TypeError, AttributeError):
@@ -100,17 +105,23 @@ def main(argv=None):
             if not base:
                 raise CheckError('WORKER_URL missing')
             expected_version = None
+            expected_mihomo_version = None
             if args.expected_manifest:
                 try:
-                    expected_version = json.loads(Path(args.expected_manifest).read_text())['version']
+                    expected_manifest = json.loads(Path(args.expected_manifest).read_text())
+                    expected_version = expected_manifest['version']
+                    expected_mihomo_version = expected_manifest.get('mihomo', {}).get('version')
                     if not isinstance(expected_version, str) or not re.fullmatch(r'[a-f0-9]{64}', expected_version):
+                        raise ValueError()
+                    if expected_mihomo_version and not re.fullmatch(r'[a-f0-9]{64}', expected_mihomo_version):
                         raise ValueError()
                 except (OSError, ValueError, KeyError, TypeError):
                     raise CheckError('Expected deployment manifest is invalid') from None
             # A deployment can change between two HTTP requests. Retry before alerting.
             for attempt in range(3):
                 try:
-                    verified = health(base, expected_version)
+                    verified = (health(base, expected_version, expected_mihomo_version) if expected_mihomo_version
+                                else health(base, expected_version))
                     break
                 except CheckError:
                     if attempt == 2:
@@ -132,6 +143,8 @@ def main(argv=None):
         return 0
     if not failed:
         print(f"Health check passed: all {len(verified['rulesets'])} rulesets verified")
+        if verified.get('mihomo_rulesets'):
+            print(f"Mihomo check passed: all {len(verified['mihomo_rulesets'])} rulesets verified")
         print(f"Verified version: {verified['version']}")
     return int(failed)
 

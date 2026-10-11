@@ -1,4 +1,4 @@
 {
-  "revision": 3,
+  "revision": 4,
   "purpose": "Change revision after configuring private repository secrets to request cloud checks."
 }

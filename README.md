@@ -1,7 +1,32 @@
 # Loon 马来西亚回国规则服务
 
-国内默认经家庭 Mac mini；各平台可独立选择节点或 DIRECT。此项目只有公开规则，
-不包含用户 Loon 节点、密码、证书指纹、订阅地址或通知密钥。
+国内默认经家庭 Mac mini；各平台可独立选择节点或 DIRECT。仓库包含公开规则与
+AES-256-GCM 加密的私人 Mihomo 配置，不保存明文节点密码、私人订阅地址或通知密钥。
+私人配置只能用用户持有的随机 256 位专用订阅链接解密；不要公开该链接或明文 YAML。
+
+## Mihomo 云端配置
+
+专用地址为 `/subscription/mihomo.yaml?token=<用户私有凭据>`，返回完整 YAML，直接在
+Mihomo/Clash Meta 客户端导入。节点及机场订阅保留在加密配置中；平台、通话和 CDN 策略
+与 Loon 配置一致。Windows 使用规则模式，安装服务或管理员运行并开启 TUN，才能接管
+微信和游戏的 UDP。配置使用 system TUN、fake-IP DNS、连接并发与进程识别。
+
+`/mihomo/` 提供 11 份原生规则：八份平台/CDN classical 文本，国内域名及 IP 两份 MRS，
+另有关键词与 GEOIP 的国内补充文本。MRS 由校验 SHA-256 的官方 Mihomo v1.19.32
+编译，每小时与 Loon 快照同时构建、校验、原子部署。清单是 `/mihomo/manifest.json`。
+Mihomo 不支持 Loon USER-AGENT 与 PROTOCOL,STUN 规则；UA 被明确计数移除，STUN
+不做全局直连。已知 RTC/UDP 域名及 Windows 微信/QQ 主进程的 UDP 使用通话策略；
+这识别的是进程或目的地，不能精确识别所有 App 的每条通话。同一进程内的小游戏或
+其他 UDP 也可能命中通话组，可在该组手动调整；独立游戏仍用游戏/平台选择组。
+
+机场 provider 下载失败时保留缓存，配置还提供已验证的节点快照或原固定节点作冷启动
+备份。Worker 只分发配置与规则，代理传输仍由节点处理；家庭 Mac mini 节点需在线，
+用于部署的笔记本无需开机。GEOIP/ASN 数据库使用 Mihomo 自身的数据下载及更新机制。
+
+公开密文存于 `public/sealed-profiles/`，Worker 不开放该目录的静态访问。缺失、重复或
+错误的订阅凭据返回 404；正常配置返回 `private, no-store`，不会被公共 CDN 缓存。
+规则监控同时检查九份 Loon 与十一份 Mihomo 文件的 SHA-256，并检查密文资产完整性。
+监控没有私人解密凭据，因此不能测试实际代理节点连通性；用户端导入时还需测试节点。
 
 ## 规则顺序
 
@@ -37,6 +62,8 @@ B 站 `bilivideo.com/cn/net`、`acgvideo.com`、`bilicdn1` 至 `bilicdn5.com` �
 1. 建立公开 GitHub 仓库，上传本项目；不要上传私人 .lcf。
 2. 将项目解压到电脑上持久保存的目录，再使用 Cloudflare Workers 免费方案部署：
    `npm ci --ignore-scripts` 后执行 `npx wrangler deploy`。已登录 Wrangler 时无需重复登录。
+   Actions 在 Linux 上依次运行公开规则构建、官方 Mihomo 编译器校验安装和 MRS 编译；
+   本地重新部署已有快照不必重新编译，安装脚本仅适用于 Linux amd64。
 3. 仓库 Actions secrets 设置 `CLOUDFLARE_API_TOKEN` 和 `BARK_URL`。
    Cloudflare Token 只授权目标账户的 Workers Scripts Edit 与 Account Settings Read。
    账户 ID 自动识别；若 Token 可访问多个账户，才需要额外设置 `CLOUDFLARE_ACCOUNT_ID`。
@@ -56,7 +83,8 @@ Workers 免费方案每次请求及定时执行均只有 10 ms CPU，所以大�
 
 - 上游超时、空列表、非原生规则、IP 错误及规则数量下降超过 20%：停止更新，保留旧部署。
 - Worker 异常：返回 503，不能返回空的成功规则文件。
-- 外部监控检查健康状态、72 小时更新超时、9 个文件的长度与 SHA-256；服务完全宕机也能检查。
+- 外部监控检查健康状态、72 小时更新超时、9 份 Loon 与 11 份 Mihomo 文件的长度与
+  SHA-256，以及加密私人配置的完整性；服务完全宕机也能检查。
 - 检查失败时日志记录具体公开路径、HTTP 状态、版本或文件校验错误。Cloudflare 403 / 1010
   单独标明访问拦截；不会将通知密钥、完整私有地址或服务器响应内容写入日志。
 - 本地助手与外部监控复用同一套 Node.js 22+ 校验器；部署后还须匹配本次生成的版本，

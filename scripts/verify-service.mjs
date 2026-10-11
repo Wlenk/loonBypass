@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MIHOMO_FILES } from '../src/mihomo.js';
 
 const RULESETS = [
   'netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
@@ -8,7 +9,8 @@ const RULESETS = [
 ];
 const LEGACY_RULESETS = RULESETS.filter(name => name !== 'china-cdn');
 
-export async function verifyService(base, { fetchImpl = fetch, now = Date.now(), expectedVersion } = {}) {
+export async function verifyService(base, { fetchImpl = fetch, now = Date.now(), expectedVersion,
+  expectedMihomoVersion } = {}) {
   const origin = new URL(base);
   if (origin.protocol !== 'https:' || origin.username || origin.password ||
       origin.search || origin.hash || origin.pathname !== '/') {
@@ -63,28 +65,57 @@ export async function verifyService(base, { fetchImpl = fetch, now = Date.now(),
   if (expectedVersion && manifest.version !== expectedVersion) {
     throw new Error('/manifest.json: 当前公开版本与本次部署版本不一致');
   }
-  const verified = await Promise.all((legacy ? LEGACY_RULESETS : RULESETS).map(async name => {
-    const entry = manifest.files[name];
-    if (entry.path !== `/rules/${name}.list` || !Number.isInteger(entry.bytes) ||
-        entry.bytes < 1 || !Number.isInteger(entry.count) || entry.count < 1 ||
-        !/^[a-f0-9]{64}$/.test(entry.sha256 ?? '')) {
+  async function checkFile(name, entry, path) {
+    if (entry?.path !== path || !Number.isInteger(entry.bytes) || entry.bytes < 1 ||
+        !Number.isInteger(entry.count) || entry.count < 1 || !/^[a-f0-9]{64}$/.test(entry.sha256 ?? '')) {
       throw new Error(`${name}: 清单内容无效`);
     }
-    const response = await get(entry.path);
+    const response = await get(path);
     const body = Buffer.from(await response.arrayBuffer());
     if (body.length !== entry.bytes ||
         createHash('sha256').update(body).digest('hex') !== entry.sha256) {
       throw new Error(`${name}: 文件长度或 SHA-256 校验失败`);
     }
     return { name, count: entry.count, bytes: body.length };
-  }));
-  return { ok: true, version: manifest.version, checked_at: manifest.checked_at, rulesets: verified };
+  }
+  let mihomo;
+  if (expectedMihomoVersion && !manifest.mihomo) {
+    throw new Error('Mihomo: 本次部署规则清单缺失');
+  }
+  if (manifest.mihomo) {
+    mihomo = await readJson('/mihomo/manifest.json');
+    if (manifest.mihomo.path !== '/mihomo/manifest.json' || manifest.mihomo.files !== 11 ||
+        mihomo?.schema !== 1 || !/^[a-f0-9]{64}$/.test(mihomo.version ?? '') ||
+        !/^[a-f0-9]{64}$/.test(mihomo.profile_sha256 ?? '') ||
+        mihomo.version !== manifest.mihomo.version || health.mihomo_version !== mihomo.version ||
+        health.mihomo_rulesets !== 11 || mihomo.source_version !== manifest.version ||
+        mihomo.checked_at !== manifest.checked_at ||
+        Object.keys(mihomo.files ?? {}).sort().join() !== Object.keys(MIHOMO_FILES).sort().join()) {
+      throw new Error('Mihomo: 健康状态、版本或规则清单不符合要求');
+    }
+    if (expectedMihomoVersion && mihomo.version !== expectedMihomoVersion) {
+      throw new Error('Mihomo: 当前公开版本与本次部署版本不一致');
+    }
+  }
+  const mihomoChecks = Promise.all(mihomo ? Object.entries(MIHOMO_FILES).map(([name, expected]) => {
+    const entry = mihomo.files[name];
+    if (entry.behavior !== expected.behavior || entry.format !== expected.format) {
+      throw new Error(`Mihomo ${name}: 格式无效`);
+    }
+    return checkFile(`Mihomo ${name}`, entry, expected.path).then(result => ({ ...result, name }));
+  }) : []);
+  const nativeChecks = Promise.all((legacy ? LEGACY_RULESETS : RULESETS).map(name =>
+    checkFile(name, manifest.files[name], `/rules/${name}.list`)));
+  const [verified, converted] = await Promise.all([nativeChecks, mihomoChecks]);
+  return { ok: true, version: manifest.version, checked_at: manifest.checked_at, rulesets: verified,
+    ...(mihomo ? { mihomo_version: mihomo.version, mihomo_rulesets: converted } : {}) };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const result = await verifyService(process.argv[2] ??
-      'https://loon-malaysia-rules.xgstudio.workers.dev', { expectedVersion: process.argv[3] });
+      'https://loon-malaysia-rules.xgstudio.workers.dev', { expectedVersion: process.argv[3],
+        expectedMihomoVersion: process.argv[4] });
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(`规则服务检查失败：${error.message}`);

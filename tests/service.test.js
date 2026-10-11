@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { verifyService } from '../scripts/verify-service.mjs';
+import { MIHOMO_FILES } from '../src/mihomo.js';
 
 const names = ['netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
   'netease-other', 'tencent', 'alibaba', 'china'];
@@ -108,4 +109,53 @@ test('origins with credentials, paths or queries are rejected before fetching', 
     'https://rules.example/path', 'https://rules.example?token=private-token']) {
     await assert.rejects(verifyService(url, { fetchImpl: async () => assert.fail() }), /HTTPS 地址/);
   }
+});
+
+function mihomoFixture() {
+  const data = fixture();
+  const binary = Buffer.from([40, 181, 47, 253, 1, 2, 3]);
+  data.manifest.mihomo = { path: '/mihomo/manifest.json', version: 'b'.repeat(64), files: 11 };
+  const converted = { schema: 1, version: data.manifest.mihomo.version,
+    source_version: data.manifest.version, checked_at: data.manifest.checked_at, profile_sha256: 'c'.repeat(64),
+    files: Object.fromEntries(Object.entries(MIHOMO_FILES).map(([name, format]) => [name, {
+      ...format, count: 1, bytes: binary.length, sha256: createHash('sha256').update(binary).digest('hex'),
+    }])) };
+  const oldFetch = data.fetchImpl;
+  data.fetchImpl = async (url, options) => {
+    if (url.pathname === '/health') return Response.json({ ok: true, version: data.manifest.version,
+      mihomo_version: converted.version, mihomo_rulesets: 11 });
+    if (url.pathname === '/mihomo/manifest.json') return Response.json(converted);
+    if (url.pathname.startsWith('/mihomo/')) return new Response(binary);
+    return oldFetch(url, options);
+  };
+  return { ...data, converted };
+}
+
+test('Mihomo verification hashes all eleven files including binary MRS assets', async () => {
+  const data = mihomoFixture();
+  const checked = await verifyService('https://rules.example', { ...data, expectedVersion: 'a'.repeat(64),
+    expectedMihomoVersion: 'b'.repeat(64) });
+  assert.equal(checked.rulesets.length, 9);
+  assert.equal(checked.mihomo_rulesets.length, 11);
+});
+
+test('old, unlinked, missing or corrupt Mihomo files cannot pass post-deployment checks', async () => {
+  for (const modify of [
+    data => { data.converted.source_version = 'c'.repeat(64); },
+    data => { delete data.converted.files['china-domain']; },
+    data => { data.converted.files['china-ipcidr'].sha256 = '0'.repeat(64); },
+    data => { data.converted.files['china-domain'].format = 'text'; },
+    data => { data.converted.checked_at = '2020-01-01'; },
+    data => { data.manifest.mihomo.version = 'c'.repeat(64); },
+  ]) {
+    const data = mihomoFixture();
+    modify(data);
+    await assert.rejects(verifyService('https://rules.example', data), /Mihomo/);
+  }
+  await assert.rejects(verifyService('https://rules.example', {
+    ...fixture(), expectedMihomoVersion: 'b'.repeat(64),
+  }), /Mihomo/);
+  await assert.rejects(verifyService('https://rules.example', {
+    ...mihomoFixture(), expectedMihomoVersion: 'c'.repeat(64),
+  }), /公开版本与本次部署版本不一致/);
 });

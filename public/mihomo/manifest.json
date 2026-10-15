@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": "54567447c0ba2c2aed1c5009296345d88920ea5a6dc76c0dd4dc878a519cc6b4",
-  "source_version": "a6f607db46f98279c73ea52e658c6577f0bf0b20ea09a8fb4f0a14b5f9f4a3bd",
-  "checked_at": "2026-10-15T19:04:52.637965+00:00",
+  "version": "727bce73c3493c7e177ffdeb14657ec71f72ffc1bcc5d9a5342db001c8d70af0",
+  "source_version": "f0a01afeeed79576932859858359bc180e4c223ff8ba73ccebcff7186300689c",
+  "checked_at": "2026-10-15T22:13:03.814339+00:00",
   "compiler": "mihomo v1.19.32",
   "profile_sha256": "5f87f7f240ec0314d8049f1ca8983a099b82732029e2f1544fa6cd7fd1d71aad",
   "skipped_user_agent": {
@@ -37,9 +37,9 @@
       "path": "/mihomo/tiktok.list",
       "behavior": "classical",
       "format": "text",
-      "count": 50,
-      "bytes": 1623,
-      "sha256": "dd289e48ce122fb73b5822372e3023960a4f5afff924b73c37696f6dfbc847b0"
+      "count": 53,
+      "bytes": 1709,
+      "sha256": "c39bddb0eb4efddbadf23655ffd65039b0f4a81e8fb026f47b65816c2515e4b4"
     },
     "douyin": {
       "path": "/mihomo/douyin.list",
@@ -85,17 +85,17 @@
       "path": "/mihomo/china-domain.mrs",
       "behavior": "domain",
       "format": "mrs",
-      "count": 108003,
-      "bytes": 522881,
-      "sha256": "43c5d3bf15a840b8c82bbae732b8d083e4c5449cd3ee58430213a0c0df4d1582"
+      "count": 107716,
+      "bytes": 521461,
+      "sha256": "506e734e5e6a145a18289a8443c989e624753d8ccc2a76da414df2489bbb52b0"
     },
     "china-ipcidr": {
       "path": "/mihomo/china-ipcidr.mrs",
       "behavior": "ipcidr",
       "format": "mrs",
-      "count": 20357,
-      "bytes": 51834,
-      "sha256": "c79470937ef761a7d2540dbcb8406a9323754704cbbd11105b6e6a8935e6551a"
+      "count": 20332,
+      "bytes": 52133,
+      "sha256": "e2deb66f052efa7b60846b379a9edc51e5e755638cbd5c6d07d9b009a04cbab9"
     },
     "china-other": {
       "path": "/mihomo/china-other.list",

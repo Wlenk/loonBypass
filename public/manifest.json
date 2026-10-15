@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "a6f607db46f98279c73ea52e658c6577f0bf0b20ea09a8fb4f0a14b5f9f4a3bd",
-  "checked_at": "2026-10-15T19:04:52.637965+00:00",
+  "version": "f0a01afeeed79576932859858359bc180e4c223ff8ba73ccebcff7186300689c",
+  "checked_at": "2026-10-15T22:13:03.814339+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -17,9 +17,9 @@
     },
     "tiktok": {
       "path": "/rules/tiktok.list",
-      "count": 51,
-      "bytes": 1645,
-      "sha256": "c7b1611e8e43fad22643ef07bb31350f40f659571c81c9eab409d8b2a722b5a4"
+      "count": 54,
+      "bytes": 1731,
+      "sha256": "e782451408ef4ac16ca111a55e2b5822d81c521811a65d00ecf6618a4be1da06"
     },
     "douyin": {
       "path": "/rules/douyin.list",
@@ -53,9 +53,9 @@
     },
     "china": {
       "path": "/rules/china.list",
-      "count": 128429,
-      "bytes": 3606576,
-      "sha256": "494dcc0a3f4645ed04dcd5710a831ce4cb83b8fc40bb7d20288f5225a69d770d"
+      "count": 128117,
+      "bytes": 3597924,
+      "sha256": "8e5f798cde1e723225547472eab13fac1680b07b5acd766d32cc9bae40da7ab1"
     }
   },
   "sources": {
@@ -79,7 +79,7 @@
   },
   "mihomo": {
     "path": "/mihomo/manifest.json",
-    "version": "54567447c0ba2c2aed1c5009296345d88920ea5a6dc76c0dd4dc878a519cc6b4",
+    "version": "727bce73c3493c7e177ffdeb14657ec71f72ffc1bcc5d9a5342db001c8d70af0",
     "files": 11
   }
 }

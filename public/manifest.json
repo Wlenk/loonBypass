@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "f0a01afeeed79576932859858359bc180e4c223ff8ba73ccebcff7186300689c",
-  "checked_at": "2026-10-17T19:20:39.164270+00:00",
+  "version": "31a20786dcd9ac6d7904808d28589a0d56a96e763dc66c53a03454600d87944c",
+  "checked_at": "2026-10-17T22:13:55.367945+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -53,9 +53,9 @@
     },
     "china": {
       "path": "/rules/china.list",
-      "count": 128117,
-      "bytes": 3597924,
-      "sha256": "8e5f798cde1e723225547472eab13fac1680b07b5acd766d32cc9bae40da7ab1"
+      "count": 128384,
+      "bytes": 3607558,
+      "sha256": "a9687b6523aef711b27fc316742cd54efd946dc114cd292c20ee2b4f9bc440d7"
     }
   },
   "sources": {
@@ -79,7 +79,7 @@
   },
   "mihomo": {
     "path": "/mihomo/manifest.json",
-    "version": "727bce73c3493c7e177ffdeb14657ec71f72ffc1bcc5d9a5342db001c8d70af0",
+    "version": "581e8f9f51cc1c0900574e24172415141ba4a0f174327faefa0e9de4bd2aef85",
     "files": 11
   }
 }

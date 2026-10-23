@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": "9d02125f383f8083e93b26dbd0313a917f38d0274648720dcf8c741b1d40106a",
-  "source_version": "a3e48b9a8cc01c686889e6dd00e9c1c639af72fe8f40522d9e1cdcabc4be4576",
-  "checked_at": "2026-10-23T19:07:46.663724+00:00",
+  "version": "5afc5ae95a697d39dcfc81d199a5f9d94de99839210738aefc1f3e3901726b9b",
+  "source_version": "5e9ab31cb9a90e5b360299493e05843f444f2f9c29f836faba1c0db910d32e20",
+  "checked_at": "2026-10-23T23:05:15.170119+00:00",
   "compiler": "mihomo v1.19.32",
   "profile_sha256": "5f87f7f240ec0314d8049f1ca8983a099b82732029e2f1544fa6cd7fd1d71aad",
   "skipped_user_agent": {
@@ -85,17 +85,17 @@
       "path": "/mihomo/china-domain.mrs",
       "behavior": "domain",
       "format": "mrs",
-      "count": 107629,
-      "bytes": 521108,
-      "sha256": "25897de4a75486f82142c0640280d07bad6f065e6bbf52aca434630c9af28392"
+      "count": 107631,
+      "bytes": 521166,
+      "sha256": "c4968ce92bf6d39690b0c33ee0cb3a796e11e64efcd65906846651c00f080eb9"
     },
     "china-ipcidr": {
       "path": "/mihomo/china-ipcidr.mrs",
       "behavior": "ipcidr",
       "format": "mrs",
-      "count": 20688,
-      "bytes": 52613,
-      "sha256": "2a65955722fc37c1436f342f8cd4f891fb1f7804b028c5fb7f81aeab5ae20b16"
+      "count": 20691,
+      "bytes": 52532,
+      "sha256": "b6d42e6c8b706f20bf1eb2aea6ba5ce33a5341e8d1afeba776171e37573a60c8"
     },
     "china-other": {
       "path": "/mihomo/china-other.list",
@@ -103,7 +103,7 @@
       "format": "text",
       "count": 14,
       "bytes": 362,
-      "sha256": "fbed68d938d77d81fe60de4b0a1702ad94a78569403f695437d3c4b7db9447e4"
+      "sha256": "59100e68a7da2f65eab74704f9bd4ed23feba0ad5ebb159ef4b1ccf24465a598"
     }
   }
 }

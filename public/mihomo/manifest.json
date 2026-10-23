@@ -2,7 +2,7 @@
   "schema": 1,
   "version": "9d02125f383f8083e93b26dbd0313a917f38d0274648720dcf8c741b1d40106a",
   "source_version": "a3e48b9a8cc01c686889e6dd00e9c1c639af72fe8f40522d9e1cdcabc4be4576",
-  "checked_at": "2026-10-23T09:58:44.553085+00:00",
+  "checked_at": "2026-10-23T14:58:51.150457+00:00",
   "compiler": "mihomo v1.19.32",
   "profile_sha256": "5f87f7f240ec0314d8049f1ca8983a099b82732029e2f1544fa6cd7fd1d71aad",
   "skipped_user_agent": {

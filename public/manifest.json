@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "1d0caf38c8f60bd59af000d349c217b0804823212d375c44d6d900b87b41dbee",
-  "checked_at": "2026-10-30T23:40:13.797866+00:00",
+  "version": "3b082adf7f0a372cd58d3569d3d8b4e3ef0860d50ad8bc83f4911df3587d6dec",
+  "checked_at": "2026-10-31T05:27:53.294239+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -17,9 +17,9 @@
     },
     "tiktok": {
       "path": "/rules/tiktok.list",
-      "count": 54,
-      "bytes": 1731,
-      "sha256": "e782451408ef4ac16ca111a55e2b5822d81c521811a65d00ecf6618a4be1da06"
+      "count": 57,
+      "bytes": 1821,
+      "sha256": "7817195ca7210f42076915d4af2d8c23a722365254c37d0d3a02a0d321dff65e"
     },
     "douyin": {
       "path": "/rules/douyin.list",
@@ -79,7 +79,7 @@
   },
   "mihomo": {
     "path": "/mihomo/manifest.json",
-    "version": "bf58dbcee29b7526a8fe2d6cd598c8710b835c4243459a08cba8dc5f0f513706",
+    "version": "02523a01ae5dceab22ec26ac58948153601a930b5338d54a126ffcbceb197ce2",
     "files": 11
   }
 }

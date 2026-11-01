@@ -20,7 +20,7 @@ assert hashlib.sha256(data).hexdigest() == '__PAYLOAD_SHA256__'
 with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
     for member in archive.getmembers():
         assert member.isfile() and '/' not in member.name and member.name not in ('.', '..')
-    archive.extractall(sys.argv[1])
+        (pathlib.Path(sys.argv[1]) / member.name).write_bytes(archive.extractfile(member).read())
 PY
 for port in __DIRECT_PORT__ __RELAY_PORT__; do
   if ss -H -lun "sport = :$port" | grep -q .; then
@@ -58,14 +58,17 @@ SYSCTL
 sysctl -p /etc/sysctl.d/90-cloudvpn-hk.conf
 command -v restorecon >/dev/null && restorecon -RF /usr/local/libexec /etc/cloudvpn-hy2 /etc/systemd/system/cloudvpn-hk* || true
 systemctl daemon-reload
-systemctl start cloudvpn-hk-relay.service
-systemctl enable --now cloudvpn-hk-relay.timer
 systemctl enable cloudvpn-hk-hy2.service
 systemctl restart cloudvpn-hk-hy2.service
 sleep 1
 systemctl is-active --quiet cloudvpn-hk-hy2.service || {
   journalctl -u cloudvpn-hk-hy2.service -n 20 --no-pager; exit 1;
 }
+if ! systemctl start cloudvpn-hk-relay.service; then
+  journalctl -u cloudvpn-hk-relay.service -n 30 --no-pager -o cat
+  exit 1
+fi
+systemctl enable --now cloudvpn-hk-relay.timer
 # Real SOCKS-over-QUIC tests check the local server and the existing Fuzhou upstream.
 # The public Hong Kong relay still requires an external client after security-group opening.
 python3 "$scratch/selftest.py" /usr/local/libexec/cloudvpn-hysteria "$scratch"

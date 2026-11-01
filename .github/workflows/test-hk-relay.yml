@@ -1,0 +1,25 @@
+name: Test Hong Kong UDP relay
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['deploy/**', 'tests/test_hk_relay.py', 'tests/integration_hk_relay.py', '.github/workflows/test-hk-relay.yml']
+permissions:
+  contents: read
+jobs:
+  relay-kernel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.9'
+      - name: Python 3.9 regression checks
+        run: python -m unittest discover -s tests -p 'test_hk_relay.py'
+      - name: Install Linux network tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nftables iproute2
+      - name: Isolated kernel UDP relay and firewall checks
+        run: sudo python3 tests/integration_hk_relay.py

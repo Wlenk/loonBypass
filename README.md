@@ -154,7 +154,8 @@ The reviewed AlmaLinux installer template is in `deploy/`. It installs a pinned
 official Hysteria binary, a dedicated systemd service, and a kernel UDP relay to
 the Fuzhou home endpoint. The relay refreshes its target from DDNS every two
 minutes. It uses firewalld when active, otherwise its own nftables table, and
-refuses to replace an unrecognized input/forward firewall. It never flushes the
+adds narrowly scoped UDP exceptions to existing IPv4/inet filter base chains.
+Existing policies and unrelated rules stay in place. It never flushes the
 system ruleset. The generated private installer contains certificate material
 and must not be committed.
 

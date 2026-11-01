@@ -11,8 +11,69 @@ STATE = Path('/var/lib/cloudvpn-hy2/relay.json')
 
 
 def run(*args, check=True, input=None):
-    return subprocess.run(args, check=check, input=input, text=True,
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=25)
+    result = subprocess.run(args, check=False, input=input, text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=25)
+    if check and result.returncode:
+        detail = (result.stderr or result.stdout).strip()[:3000]
+        raise RuntimeError(f'{args[0]} failed ({result.returncode}): {detail}')
+    return result
+
+
+OWNED_COMMENTS = {'cloudvpn-hk:hy2-input', 'cloudvpn-hk:relay-forward', 'cloudvpn-hk:relay-reply'}
+
+
+def nft_plan(config, ip, interface, rules):
+    """Keep existing policies/rules and add explicit service-only exceptions.
+
+    A separate accept chain cannot override another base chain's drop. Install
+    the exceptions in every existing IPv4/inet input or forward filter chain.
+    """
+    target = ipaddress.ip_address(ip)
+    if target.version != 4 or not target.is_global:
+        raise RuntimeError('Relay target must be a public IPv4')
+    direct, relay, remote = (int(config[key]) for key in ('direct_port', 'relay_port', 'home_port'))
+    if any(not 1 <= port <= 65535 for port in (direct, relay, remote)) or direct == relay:
+        raise RuntimeError('Invalid service ports')
+    quote = json.dumps
+    commands, filters = [], []
+    items = rules.get('nftables', [])
+    for item in items:
+        rule = item.get('rule', {})
+        if rule.get('comment') in OWNED_COMMENTS and rule.get('family') in ('ip', 'inet'):
+            commands.append('delete rule {} {} {} handle {}'.format(rule['family'],
+                quote(rule['table']), quote(rule['chain']), int(rule['handle'])))
+        chain = item.get('chain', {})
+        if (chain.get('family') in ('ip', 'inet') and chain.get('type') == 'filter' and
+                chain.get('hook') in ('input', 'forward')):
+            filters.append(chain)
+    exists = any(item.get('table', {}).get('family') == 'ip' and
+                 item.get('table', {}).get('name') == 'cloudvpn_hk_relay' for item in items)
+    if exists:
+        commands.append('delete table ip cloudvpn_hk_relay')
+    commands.append(f'''table ip cloudvpn_hk_relay {{
+ chain prerouting {{
+  type nat hook prerouting priority dstnat; policy accept;
+  iifname {quote(interface)} fib daddr type local udp dport {relay} dnat to {ip}:{remote}
+ }}
+ chain postrouting {{
+  type nat hook postrouting priority srcnat; policy accept;
+  ip daddr {ip} udp dport {remote} ct status dnat ct original proto-dst {relay} masquerade
+ }}
+}}''')
+    for chain in filters:
+        prefix = 'insert rule {} {} {} '.format(chain['family'], quote(chain['table']), quote(chain['name']))
+        family = 'meta nfproto ipv4 ' if chain['family'] == 'inet' else ''
+        if chain['hook'] == 'input':
+            commands.append(prefix + family + f'iifname {quote(interface)} udp dport {direct} '
+                'accept comment "cloudvpn-hk:hy2-input"')
+        else:
+            commands.append(prefix + family + f'iifname {quote(interface)} ip daddr {ip} '
+                f'udp dport {remote} ct status dnat ct direction original '
+                f'ct original proto-dst {relay} accept comment "cloudvpn-hk:relay-forward"')
+            commands.append(prefix + family + f'oifname {quote(interface)} ip saddr {ip} '
+                f'udp sport {remote} ct status dnat ct direction reply '
+                f'ct original proto-dst {relay} accept comment "cloudvpn-hk:relay-reply"')
+    return '\n'.join(commands) + '\n'
 
 
 def target_ip(host):
@@ -54,24 +115,15 @@ def apply(config, ip, prior):
         result = {'ip': ip, 'backend': 'firewalld', 'zone': zone}
     else:
         rules = json.loads(run('nft', '-j', 'list', 'ruleset').stdout)
-        for item in rules.get('nftables', []):
-            chain = item.get('chain', {})
-            if (chain.get('hook') in ('input', 'forward') and
-                    chain.get('table') != 'cloudvpn_hk_relay'):
-                raise RuntimeError('Existing non-firewalld input/forward firewall; integrate explicitly first')
-        exists = run('nft', 'list', 'table', 'ip', 'cloudvpn_hk_relay', check=False).returncode == 0
-        text = ('delete table ip cloudvpn_hk_relay\n' if exists else '') + f'''
-table ip cloudvpn_hk_relay {{
- chain prerouting {{
-  type nat hook prerouting priority dstnat; policy accept;
-  iifname "{interface}" fib daddr type local udp dport {port} dnat to {ip}:{remote}
- }}
- chain postrouting {{
-  type nat hook postrouting priority srcnat; policy accept;
-  ip daddr {ip} udp dport {remote} ct status dnat masquerade
- }}
-}}
-'''
+        text = nft_plan(config, ip, interface, rules)
+        # Backup for diagnosis only; this service never restores the whole host
+        # firewall or flushes any unrelated table, chain, rule, or policy.
+        backup = STATE.parent / 'firewall-before-first-relay.json'
+        if not backup.exists():
+            backup.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            with backup.open('x') as stream:
+                json.dump(rules, stream)
+            backup.chmod(0o600)
         # nft applies one transaction: either all our changes commit or none do.
         run('nft', '--check', '-f', '-', input=text)
         run('nft', '-f', '-', input=text)

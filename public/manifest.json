@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "3b082adf7f0a372cd58d3569d3d8b4e3ef0860d50ad8bc83f4911df3587d6dec",
-  "checked_at": "2026-11-01T15:00:29.666660+00:00",
+  "version": "bf3f6fe0bee9ccbba5da307e4589c301d75b143b8447b171743fc78e70ef6d12",
+  "checked_at": "2026-11-01T19:26:11.408569+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -58,6 +58,20 @@
       "sha256": "6f44857ba6265820af5d15287a2a1151086ab7f58da9926449eb233cfa94577c"
     }
   },
+  "supplemental": {
+    "mihoyo": {
+      "path": "/rules/mihoyo.list",
+      "count": 25,
+      "bytes": 773,
+      "sha256": "3fe60f55f479e74aaf52b51f6af620b2e165f5d08a3812b24883edcb87610ced"
+    },
+    "netease-games": {
+      "path": "/rules/netease-games.list",
+      "count": 52,
+      "bytes": 1498,
+      "sha256": "a5c7793656350996299ec6b1fb032658e2da203e23faa0bfde4eddf73506555f"
+    }
+  },
   "sources": {
     "NetEaseMusic": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/NetEaseMusic/NetEaseMusic.list",
     "NetEase": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/NetEase/NetEase.list",
@@ -75,7 +89,9 @@
     "META_TencentGames": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tencent-games.list",
     "META_TikTok": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.list",
     "META_Douyin": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/douyin.list",
-    "CuratedChinaCDN": "https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list"
+    "META_MiHoYo": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/mihoyo.list",
+    "CuratedChinaCDN": "https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list",
+    "CuratedNetEaseGames": "https://github.com/Wlenk/loonBypass/blob/main/data/netease-games.list"
   },
   "mihomo": {
     "path": "/mihomo/manifest.json",

@@ -1,4 +1,4 @@
 {
-  "revision": 4,
-  "purpose": "Change revision after configuring private repository secrets to request cloud checks."
+  "reason": "public-game-rules-hk-template-only",
+  "at": "2026-11-01T19:21:50.448Z"
 }

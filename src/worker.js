@@ -3,6 +3,7 @@
 import { MIHOMO_FILES, PROFILE_PATH, serveProfile } from './mihomo.js';
 const RULESETS = ['netease-music', 'tencent-games', 'tiktok', 'douyin', 'china-cdn',
   'netease-other', 'tencent', 'alibaba', 'china'];
+const SUPPLEMENTAL = ['mihoyo', 'netease-games'];
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -20,6 +21,9 @@ export default {
         let ok = manifest.schema === 1 && names.sort().join() === [...RULESETS].sort().join() &&
           Number.isFinite(age) && age >= -300000 && age < 72 * 3600000;
         let mihomoVersion;
+        if (manifest.supplemental) {
+          ok &&= Object.keys(manifest.supplemental).sort().join() === [...SUPPLEMENTAL].sort().join();
+        }
         if (manifest.mihomo) {
           const [converted, sealed] = await Promise.all([
             env.ASSETS.fetch(new Request(new URL('/mihomo/manifest.json', url))),
@@ -45,7 +49,7 @@ export default {
           { status: ok ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
       }
       if (url.pathname !== '/manifest.json' &&
-          !RULESETS.some(name => url.pathname === `/rules/${name}.list`) &&
+          ![...RULESETS, ...SUPPLEMENTAL].some(name => url.pathname === `/rules/${name}.list`) &&
           url.pathname !== '/mihomo/manifest.json' &&
           !Object.values(MIHOMO_FILES).some(file => url.pathname === file.path)) {
         return new Response('Rule service: /health, /manifest.json, /rules/*.list, /mihomo/', { status: 404 });

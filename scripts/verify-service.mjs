@@ -78,6 +78,13 @@ export async function verifyService(base, { fetchImpl = fetch, now = Date.now(),
     }
     return { name, count: entry.count, bytes: body.length };
   }
+  if (manifest.supplemental) {
+    if (Object.keys(manifest.supplemental).sort().join() !== 'mihoyo,netease-games') {
+      throw new Error('游戏补充规则清单不完整');
+    }
+    await Promise.all(Object.entries(manifest.supplemental).map(([name, entry]) =>
+      checkFile(name, entry, `/rules/${name}.list`)));
+  }
   let mihomo;
   if (expectedMihomoVersion && !manifest.mihomo) {
     throw new Error('Mihomo: 本次部署规则清单缺失');

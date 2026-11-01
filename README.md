@@ -138,3 +138,30 @@ Bark 地址和 Cloudflare API Token，自动读取唯一的 Account ID。它仅�
 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script)。完整来源 URL 保存在
 `public/manifest.json`。编译器是自定义代码；上游数据及其权利归原项目和对应贡献者所有，
 公开发布前保留这些来源和上游适用的许可声明。
+# Hong Kong / Fuzhou Loon profile
+
+The additive `/rules/mihoyo.list` and `/rules/netease-games.list` endpoints are
+compiled with the existing hourly update. The original nine rule sets keep
+their membership so existing clients continue to work. The Windows subscription
+keeps its current policy choices.
+
+Private Loon profiles and server installers are delivered separately to their
+owner. New server passwords, configuration files, and TLS private keys are not
+committed to this repository. The installer is not executed by the Worker or by
+the update workflow.
+
+The reviewed AlmaLinux installer template is in `deploy/`. It installs a pinned
+official Hysteria binary, a dedicated systemd service, and a kernel UDP relay to
+the Fuzhou home endpoint. The relay refreshes its target from DDNS every two
+minutes. It uses firewalld when active, otherwise its own nftables table, and
+refuses to replace an unrecognized input/forward firewall. It never flushes the
+system ruleset. The generated private installer contains certificate material
+and must not be committed.
+
+The new Loon profile offers Fuzhou direct, Hong Kong to Fuzhou relay, and Hong
+Kong exit. Existing China defaults select the relay; existing direct defaults
+stay direct. miHoYo and NetEase Games have independent selectors. miHoYo domain
+rules and UDP ports 22101/22102 precede broad platform, CDN, and STUN rules.
+Port rules are heuristics, not application identity; unknown pure-IP game
+sessions still require inspection on the user's device.
+

@@ -18,7 +18,8 @@ SOURCES = {n: BASE + f'{n}/{n}.list' for n in NAMES}
 SOURCES.update({n + 'Domain': BASE + f'{n}/{n}_Domain.list'
                 for n in ['Tencent', 'Alibaba', 'ChinaMax']})
 SOURCES.update({'META_TencentGames': META + 'tencent-games.list',
-                'META_TikTok': META + 'tiktok.list', 'META_Douyin': META + 'douyin.list'})
+                'META_TikTok': META + 'tiktok.list', 'META_Douyin': META + 'douyin.list',
+                'META_MiHoYo': META + 'mihoyo.list'})
 TYPES = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'IP-CIDR', 'IP-CIDR6',
          'IP-ASN', 'USER-AGENT', 'GEOIP'}
 GAMES = ['game.qq.com', 'games.qq.com', 'qqgame.qq.com', 'pvp.qq.com',
@@ -176,9 +177,31 @@ def build(fixture=None, output=None):
                        'bytes': len(body), 'sha256': hashlib.sha256(body).hexdigest()}
         bodies[name] = body
     version = hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
+    # Additive sets preserve the nine old endpoints, including their membership.
+    supplemental = {}
+    new_groups = {'mihoyo': src['META_MiHoYo'],
+                  'netease-games': parse((ROOT / 'data/netease-games.list').read_text())}
+    for name, rows in new_groups.items():
+        rows = list(dict.fromkeys(rows))
+        prior = old.get('supplemental', {}).get(name, {}).get('count', 0) if old else 0
+        if len(rows) < 15 or (prior and len(rows) < prior * .8):
+            raise ValueError('Rejected truncated game set: ' + name)
+        if any(row in {'DOMAIN-SUFFIX,163.com', 'DOMAIN-SUFFIX,netease.com',
+                       'DOMAIN-SUFFIX,163yun.com'} for row in rows):
+            raise ValueError('A game set must not capture the whole NetEase platform')
+        body = ('# Game-specific additive rules; sources in /manifest.json.\n' + '\n'.join(rows) + '\n').encode()
+        supplemental[name] = {'path': f'/rules/{name}.list', 'count': len(rows),
+                              'bytes': len(body), 'sha256': hashlib.sha256(body).hexdigest()}
+        bodies[name] = body
     manifest = {'schema': 1, 'version': version, 'checked_at': datetime.now(timezone.utc).isoformat(),
-                'files': files, 'sources': {**SOURCES, 'CuratedChinaCDN':
-                    'https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list'}}
+                'files': files, 'supplemental': supplemental,
+                'sources': {**SOURCES, 'CuratedChinaCDN':
+                    'https://github.com/Wlenk/loonBypass/blob/main/data/china-cdn.list',
+                    'CuratedNetEaseGames': 'https://github.com/Wlenk/loonBypass/blob/main/data/netease-games.list'}}
+    # Include additive game sets in the deployment identity, so an old deployed
+    # game list cannot satisfy the new post-deploy version check.
+    manifest['version'] = hashlib.sha256(json.dumps({'files': files,
+        'supplemental': supplemental}, sort_keys=True).encode()).hexdigest()
     # Everything validates before any live assets are replaced. Deployment is a new Worker version.
     output.mkdir(parents=True, exist_ok=True)
     (output / 'rules').mkdir(exist_ok=True)

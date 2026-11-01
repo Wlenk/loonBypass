@@ -2,6 +2,7 @@
 """Refresh only this deployment's UDP DNAT/SNAT after the home DDNS changes."""
 import ipaddress
 import json
+import re
 import socket
 import subprocess
 from pathlib import Path
@@ -35,13 +36,19 @@ def nft_plan(config, ip, interface, rules):
     if any(not 1 <= port <= 65535 for port in (direct, relay, remote)) or direct == relay:
         raise RuntimeError('Invalid service ports')
     quote = json.dumps
+    def identifier(value):
+        # nft's table/chain command grammar requires identifiers, not quoted
+        # strings. Validate host-provided names before using that grammar.
+        if not isinstance(value, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.-]*', value):
+            raise RuntimeError('Unsupported nft table/chain identifier; keeping existing firewall')
+        return value
     commands, filters = [], []
     items = rules.get('nftables', [])
     for item in items:
         rule = item.get('rule', {})
         if rule.get('comment') in OWNED_COMMENTS and rule.get('family') in ('ip', 'inet'):
             commands.append('delete rule {} {} {} handle {}'.format(rule['family'],
-                quote(rule['table']), quote(rule['chain']), int(rule['handle'])))
+                identifier(rule['table']), identifier(rule['chain']), int(rule['handle'])))
         chain = item.get('chain', {})
         if (chain.get('family') in ('ip', 'inet') and chain.get('type') == 'filter' and
                 chain.get('hook') in ('input', 'forward')):
@@ -61,7 +68,7 @@ def nft_plan(config, ip, interface, rules):
  }}
 }}''')
     for chain in filters:
-        prefix = 'insert rule {} {} {} '.format(chain['family'], quote(chain['table']), quote(chain['name']))
+        prefix = 'insert rule {} {} {} '.format(chain['family'], identifier(chain['table']), identifier(chain['name']))
         family = 'meta nfproto ipv4 ' if chain['family'] == 'inet' else ''
         if chain['hook'] == 'input':
             commands.append(prefix + family + f'iifname {quote(interface)} udp dport {direct} '

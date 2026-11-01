@@ -14,7 +14,7 @@ curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
   --connect-timeout 15 --max-time 60 \
   "https://raw.githubusercontent.com/Wlenk/loonBypass/$revision/deploy/hk-relay.py" \
   -o "$scratch/hk-relay.py"
-printf '%s  %s\n' '2de54f2711d96e664a3a06e239ea7ded471d59464d878564ed0fc3def21a3287' "$scratch/hk-relay.py" | sha256sum --check --status
+printf '%s  %s\n' '13811529cb007737d6617a928717cb08e706a4a2a7ca05dbefdb47cf1d3fe8fb' "$scratch/hk-relay.py" | sha256sum --check --status
 python3 -m py_compile "$scratch/hk-relay.py"
 if [[ ! -e /usr/local/libexec/cloudvpn-hk-relay.py.before-firewall-fix ]]; then
   cp -p /usr/local/libexec/cloudvpn-hk-relay.py /usr/local/libexec/cloudvpn-hk-relay.py.before-firewall-fix

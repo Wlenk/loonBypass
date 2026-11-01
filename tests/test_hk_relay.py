@@ -55,7 +55,7 @@ class RelaySafety(unittest.TestCase):
                       'comment': 'unrelated-rule'}},
         ]}
         plan = relay.nft_plan(CONFIG, '8.8.8.8', 'eth0', rules)
-        self.assertIn('delete rule ip "filter" "FORWARD" handle 12', plan)
+        self.assertIn('delete rule ip filter FORWARD handle 12', plan)
         self.assertNotIn('handle 13', plan)
         self.assertIn('delete table ip cloudvpn_hk_relay', plan)
         self.assertNotIn('delete table ip filter', plan)

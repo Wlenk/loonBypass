@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": "02523a01ae5dceab22ec26ac58948153601a930b5338d54a126ffcbceb197ce2",
-  "source_version": "59ffffd64984498ee28eb508f230ec100ecc0255d528fd99149745b7e1e7f190",
-  "checked_at": "2026-11-06T23:02:25.333233+00:00",
+  "version": "54d35a75c3d39a151f535c0aac1e23bd9023b0b9f2ee8e1681f012bbfd529a37",
+  "source_version": "ba63379afa9f3f9aceb249f1116151080409feecfd31da8b668dca6bc495b5c2",
+  "checked_at": "2026-11-07T02:44:41.514053+00:00",
   "compiler": "mihomo v1.19.32",
   "profile_sha256": "5f87f7f240ec0314d8049f1ca8983a099b82732029e2f1544fa6cd7fd1d71aad",
   "skipped_user_agent": {
@@ -29,9 +29,9 @@
       "path": "/mihomo/tencent-games.list",
       "behavior": "classical",
       "format": "text",
-      "count": 111,
-      "bytes": 3171,
-      "sha256": "81aa19af2cc43acb3b545203c461a163ca2714495debb7b236b61b1621f65210"
+      "count": 112,
+      "bytes": 3210,
+      "sha256": "315583e875f07ab62770d67ec7b9a018c56b893d7c5e286a484d993cb5ceb4d6"
     },
     "tiktok": {
       "path": "/mihomo/tiktok.list",
@@ -69,9 +69,9 @@
       "path": "/mihomo/tencent.list",
       "behavior": "classical",
       "format": "text",
-      "count": 2468,
-      "bytes": 71653,
-      "sha256": "f5f02575800070a893c516e6882d1645b73495c1cae6f3e821b4cf091978d475"
+      "count": 2469,
+      "bytes": 71673,
+      "sha256": "bab29f6a447bfbfadb007312498b49285727cdade238fb3bb2a5390121d0ad26"
     },
     "alibaba": {
       "path": "/mihomo/alibaba.list",
@@ -85,9 +85,9 @@
       "path": "/mihomo/china-domain.mrs",
       "behavior": "domain",
       "format": "mrs",
-      "count": 107361,
-      "bytes": 519453,
-      "sha256": "3477e2a3214117c60a1ffb3b1fa90ff0e1514989f80a95b279d7757d73cc603b"
+      "count": 107360,
+      "bytes": 519430,
+      "sha256": "23d918b3245ac4ad6f30ce2bd305c4bf8c4b8cbf6ce66107dc99e4a81c99a2bf"
     },
     "china-ipcidr": {
       "path": "/mihomo/china-ipcidr.mrs",

@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "ba63379afa9f3f9aceb249f1116151080409feecfd31da8b668dca6bc495b5c2",
-  "checked_at": "2026-11-08T00:28:55.487075+00:00",
+  "version": "91dd49046a320f9d647066e7e906ebedd02dfa1fd7cd47583906c2fca08d8999",
+  "checked_at": "2026-11-08T07:14:24.960943+00:00",
   "files": {
     "netease-music": {
       "path": "/rules/netease-music.list",
@@ -63,7 +63,7 @@
       "path": "/rules/mihoyo.list",
       "count": 25,
       "bytes": 773,
-      "sha256": "3d41d004f2882d386706fab8fdda5ca92893cd32595094a0b3603dfa3d1375ac"
+      "sha256": "3fe60f55f479e74aaf52b51f6af620b2e165f5d08a3812b24883edcb87610ced"
     },
     "netease-games": {
       "path": "/rules/netease-games.list",
